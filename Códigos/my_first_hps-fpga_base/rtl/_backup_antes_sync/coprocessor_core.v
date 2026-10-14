@@ -1,0 +1,404 @@
+// coprocessor_core.v
+// Núcleo gráfico + ISA, SEM portas Avalon/ISSP externas.
+// Entrada de comandos: apenas fios internos (vindo de PIOs do soc_system).
+//
+// Conecte no top GHRD:
+//   pio_cmd_data / pio_cmd_push_lvl  ←  export dos PIOs output do Qsys
+//   pio_status                       →  export do PIO input do Qsys
+
+module coprocessor_core (
+    input  wire        CLOCK_50,
+    input  wire        reset_n,           // ativo em 0 (ex.: hps_fpga_reset_n)
+    // ---- PIOs internos (soc_system) ----
+    input  wire [31:0] pio_cmd_data,
+    input  wire        pio_cmd_push_lvl,
+    output wire [7:0]  pio_status,
+    // ---- VGA ----
+    output wire [7:0]  VGA_R, VGA_G, VGA_B,
+    output wire        VGA_HS, VGA_VS, VGA_CLK, VGA_BLANK_N, VGA_SYNC_N,
+    // ---- Debug (LEDs da placa — pinos já existentes) ----
+    output wire [9:0]  LEDR
+);
+
+    wire reset = ~reset_n;
+    wire clk_pix, pll_locked;
+    wire clk_sys, pll_locked_100;
+
+    meu_pll u_pll (
+        .refclk(CLOCK_50),
+        .outclk_0(clk_pix),
+        .locked(pll_locked)
+    );
+    pllpara100 u_pll100 (
+        .refclk(CLOCK_50),
+        .rst(reset),
+        .outclk_0(clk_sys),
+        .locked(pll_locked_100)
+    );
+    wire rst = reset | ~pll_locked | ~pll_locked_100;
+
+    // ---- ISA ----
+    wire cmd_push;
+    wire [31:0] cmd_data;
+    wire busy, done, fifo_full, fifo_empty, halt_out;
+    wire gfx_wr_en;
+    wire [15:0] gfx_addr;
+    wire [8:0]  gfx_data;
+    wire [5:0]  dbg_opcode;
+    wire [2:0]  dbg_state;
+    // Escrita direta nas memórias de vídeo (SET_TILE / WR_RAM)
+    wire [3:0]  mem_we;      // [0]=tilemap A [1]=tilemap B [2]=padrões tiles [3]=padrões sprites
+    wire [13:0] mem_addr;
+    wire [7:0]  mem_data;
+    // Estado dos buffers sincronizado em clk_sys (definidos mais abaixo)
+    wire        bg_frente_sys, fb_frente_sys;
+
+    // VSYNC edge → clk_sys
+    wire vga_vs_int;
+    reg  vs1, vs2, vs3;
+    always @(posedge clk_sys) begin
+        vs1 <= vga_vs_int;
+        vs2 <= vs1;
+        vs3 <= vs2;
+    end
+    wire vsync_borda_sys = vs2 & ~vs3;
+
+    pio_cmd_iface u_pio (
+        .clk(clk_sys), .reset(rst),
+        .pio_cmd_data(pio_cmd_data),
+        .pio_cmd_push_lvl(pio_cmd_push_lvl),
+        .pio_status(pio_status),
+        .busy(busy), .done(done),
+        .fifo_full(fifo_full), .fifo_empty(fifo_empty),
+        .halt(halt_out), .vsync_flag(vsync_borda_sys),
+        .bg_frente(bg_frente_sys), .fb_frente(fb_frente_sys),
+        .cmd_push(cmd_push), .cmd_data(cmd_data)
+    );
+
+    isa_core u_isa (
+        .clk(clk_sys), .reset(rst),
+        .cmd_push(cmd_push), .cmd_data(cmd_data),
+        .busy(busy), .done(done),
+        .fifo_full(fifo_full), .fifo_empty(fifo_empty),
+        .halt_out(halt_out),
+        .vsync_borda(vsync_borda_sys),
+        .gfx_wr_en(gfx_wr_en), .gfx_addr(gfx_addr), .gfx_data(gfx_data),
+        .bg_frente(bg_frente_sys),
+        .mem_we(mem_we), .mem_addr(mem_addr), .mem_data(mem_data),
+        .dbg_opcode(dbg_opcode), .dbg_state(dbg_state)
+    );
+
+    assign LEDR[0] = busy;
+    assign LEDR[1] = done;
+    assign LEDR[2] = fifo_full;
+    assign LEDR[3] = fifo_empty;
+    assign LEDR[4] = halt_out;
+    assign LEDR[9:5] = dbg_opcode[4:0];
+
+    // ---- Banco gráfico PBL1 ----
+    wire [7:0] bg_scroll_x, bg_scroll_y;
+    wire [4:0] sprite_sel;
+    // Atributos achatados (Verilog-2001): item i = bits [i*W +: W]
+    wire [32*9-1:0] sprite_x_flat, sprite_y_flat;
+    wire [32*5-1:0] sprite_padrao_flat;
+    wire [31:0]     sprite_en_flat;
+    wire [32*3-1:0] sprite_pri_flat;
+    wire [31:0]     sprite_fliph_flat, sprite_flipv_flat;
+    wire enable_bg, enable_sprite, enable_poly;
+    wire [8:0] ovr_spr1_x;
+    wire ovr_prioridade;
+    wire sprite_over_poly;
+    wire swap_bg_request, swap_fb_request;
+    wire [4*10-1:0] poly_x_flat, poly_y_flat;
+    wire [4*9-1:0]  poly_size_flat;
+    wire [4*3-1:0]  poly_tipo_flat, poly_nverts_flat;
+    wire [4*8-1:0]  poly_cor_flat;
+    wire [3:0]      poly_habilitado_flat;
+    wire [7:0] status_reg;
+    wire endereco_invalido;
+
+    banco_registradores u_regs (
+        .clk_sys(clk_sys), .reset(rst),
+        .wr_en(gfx_wr_en), .endereco(gfx_addr), .dado_in(gfx_data),
+        .bg_scroll_x(bg_scroll_x), .bg_scroll_y(bg_scroll_y),
+        .sprite_sel(sprite_sel),
+        .sprite_x_flat(sprite_x_flat), .sprite_y_flat(sprite_y_flat),
+        .sprite_padrao_flat(sprite_padrao_flat), .sprite_en_flat(sprite_en_flat),
+        .sprite_pri_flat(sprite_pri_flat), .sprite_fliph_flat(sprite_fliph_flat),
+        .sprite_flipv_flat(sprite_flipv_flat),
+        .enable_bg(enable_bg), .enable_sprite(enable_sprite), .enable_poly(enable_poly),
+        .ovr_spr1_x(ovr_spr1_x), .ovr_prioridade(ovr_prioridade),
+        .swap_bg_request(swap_bg_request), .swap_fb_request(swap_fb_request),
+        .sprite_over_poly(sprite_over_poly),
+        .poly_x_flat(poly_x_flat), .poly_y_flat(poly_y_flat),
+        .poly_size_flat(poly_size_flat),
+        .poly_tipo_flat(poly_tipo_flat), .poly_nverts_flat(poly_nverts_flat),
+        .poly_cor_flat(poly_cor_flat), .poly_habilitado_flat(poly_habilitado_flat),
+        .status(status_reg),
+        .estimulo_invalido(1'b0),
+        .buffer_pronto(pll_locked_100),
+        .endereco_invalido(endereco_invalido)
+    );
+
+    // ---- Pipeline gráfico (RAMs + motores + VGA) ----
+    // Reutiliza a mesma estrutura do PBL1. Sinais mínimos para VGA.
+    wire [10:0] tilemap_addr;
+    wire [7:0]  tilemap_data_a, tilemap_data_b, tilemap_data;
+    wire [12:0] padrao_addr_sprite;
+    wire [7:0]  padrao_data_sprite;
+    wire [13:0] padrao_addr;
+    wire [7:0]  padrao_data;
+
+    // Portas de escrita ligadas à ISA (SET_TILE / WR_RAM), mesmo clock (clk_sys)
+    ram_tilemap ramA (
+        .clock(clk_sys), .data(mem_data), .rdaddress(tilemap_addr),
+        .wraddress(mem_addr[10:0]), .wren(mem_we[0]), .q(tilemap_data_a)
+    );
+    ram_tilemapB ramB (
+        .clock(clk_sys), .data(mem_data), .rdaddress(tilemap_addr),
+        .wraddress(mem_addr[10:0]), .wren(mem_we[1]), .q(tilemap_data_b)
+    );
+    ram_sprites rspt (
+        .clock(clk_sys), .data(mem_data), .rdaddress({1'b0, padrao_addr_sprite}),
+        .wraddress(mem_addr), .wren(mem_we[3]), .q(padrao_data_sprite)
+    );
+    ram_padrao_tiles ramtp (
+        .clock(clk_sys), .data(mem_data), .rdaddress(padrao_addr),
+        .wraddress(mem_addr), .wren(mem_we[2]), .q(padrao_data)
+    );
+
+    reg vsync_pix_ff1, vsync_pix_ff2;
+    wire vsync_borda_pix = vsync_pix_ff2 & ~vsync_pix_ff1;
+    always @(posedge clk_pix) begin
+        vsync_pix_ff1 <= vga_vs_int;
+        vsync_pix_ff2 <= vsync_pix_ff1;
+    end
+
+    // ============================================================
+    //  Pedidos de troca (SWAP_BG / SWAP_FB) clk_sys -> clk_pix
+    //  Os pedidos são pulsos de 1 ciclo a 100 MHz; amostrados direto
+    //  a 25 MHz eles podiam se perder. Usamos sincronização por
+    //  TOGGLE: cada pedido inverte um flag em clk_sys e o domínio
+    //  clk_pix detecta a mudança do flag.
+    // ============================================================
+    reg swap_bg_tgl, swap_fb_tgl;
+    always @(posedge clk_sys) begin
+        if (rst) begin
+            swap_bg_tgl <= 1'b0;
+            swap_fb_tgl <= 1'b0;
+        end else begin
+            if (swap_bg_request) swap_bg_tgl <= ~swap_bg_tgl;
+            if (swap_fb_request) swap_fb_tgl <= ~swap_fb_tgl;
+        end
+    end
+
+    reg [2:0] swap_bg_sync, swap_fb_sync;
+    always @(posedge clk_pix) begin
+        swap_bg_sync <= {swap_bg_sync[1:0], swap_bg_tgl};
+        swap_fb_sync <= {swap_fb_sync[1:0], swap_fb_tgl};
+    end
+    wire swap_bg_pulso_pix = swap_bg_sync[1] ^ swap_bg_sync[2];
+    wire swap_fb_pulso_pix = swap_fb_sync[1] ^ swap_fb_sync[2];
+
+    // ---- Troca do BACKGROUND (tilemap A <-> B), efetivada na VSYNC ----
+    reg bg_buffer_ativo, swap_bg_pendente;   // 0 = tilemap A visível, 1 = B
+    always @(posedge clk_pix) begin
+        if (rst) begin
+            bg_buffer_ativo  <= 1'b0;
+            swap_bg_pendente <= 1'b0;
+        end else begin
+            if (vsync_borda_pix && swap_bg_pendente) begin
+                bg_buffer_ativo  <= ~bg_buffer_ativo;
+                swap_bg_pendente <= 1'b0;
+            end
+            if (swap_bg_pulso_pix) swap_bg_pendente <= 1'b1;
+        end
+    end
+    assign tilemap_data = bg_buffer_ativo ? tilemap_data_b : tilemap_data_a;
+
+    // ---- Pedido de troca do FRAME BUFFER, efetivado na VSYNC ----
+    reg swap_fb_pendente;
+    always @(posedge clk_pix) begin
+        if (rst) begin
+            swap_fb_pendente <= 1'b0;
+        end else begin
+            if (vsync_borda_pix && swap_fb_pendente)
+                swap_fb_pendente <= 1'b0;
+            if (swap_fb_pulso_pix) swap_fb_pendente <= 1'b1;
+        end
+    end
+
+    reg [7:0] bg_sx1, bg_sx2, bg_sy1, bg_sy2, bg_sx_q, bg_sy_q;
+    always @(posedge clk_pix) begin
+        bg_sx1 <= bg_scroll_x; bg_sx2 <= bg_sx1;
+        bg_sy1 <= bg_scroll_y; bg_sy2 <= bg_sy1;
+        if (rst) begin bg_sx_q <= 0; bg_sy_q <= 0;
+        end else if (vsync_borda_pix) begin
+            bg_sx_q <= bg_sx2; bg_sy_q <= bg_sy2;
+        end
+    end
+
+    // Contadores de timing VGA (simplificado — alinha ao driver)
+    wire [9:0] next_x, next_y;
+    reg hs_d, vs_d;
+    reg [9:0] hc, vc;
+    localparam H_BACK=10'd48, H_ACT=10'd640, H_TOT=10'd800;
+    localparam V_BACK=10'd33, V_ACT=10'd480, V_TOT=10'd525;
+
+    always @(posedge clk_pix or posedge rst) begin
+        if (rst) begin hs_d<=1; vs_d<=1; hc<=0; vc<=0;
+        end else begin
+            hs_d <= VGA_HS; vs_d <= vga_vs_int;
+            if (VGA_HS && !hs_d) hc <= 0;
+            else hc <= (hc == H_TOT-1) ? 0 : hc + 1'b1;
+            if (vga_vs_int && !vs_d) vc <= 0;
+            else if (VGA_HS && !hs_d) vc <= (vc == V_TOT-1) ? 0 : vc + 1'b1;
+        end
+    end
+
+    wire in_h = (hc >= H_BACK) && (hc < H_BACK+H_ACT);
+    wire in_v = (vc >= V_BACK) && (vc < V_BACK+V_ACT);
+    wire [9:0] draw_x = in_h ? ((next_x!=0)?next_x:(hc-H_BACK)) : 0;
+    wire [9:0] draw_y = in_v ? ((next_y!=0)?next_y:(vc-V_BACK)) : 0;
+
+    wire [10:0] raw_x_bg  = {1'b0,hc}+11'd2;
+    wire [10:0] raw_y_bg  = {1'b0,vc}+11'd2;
+    wire [10:0] raw_x_spr = {1'b0,hc}+11'd1;
+    wire [10:0] raw_y_spr = {1'b0,vc}+11'd1;
+    wire [10:0] adj_x_bg  = (raw_x_bg>=H_BACK)?(raw_x_bg-H_BACK):0;
+    wire [10:0] adj_y_bg  = (raw_y_bg>=V_BACK)?(raw_y_bg-V_BACK):0;
+    wire [10:0] adj_x_spr = (raw_x_spr>=H_BACK)?(raw_x_spr-H_BACK):0;
+    wire [10:0] adj_y_spr = (raw_y_spr>=V_BACK)?(raw_y_spr-V_BACK):0;
+    wire req_bg  = (adj_x_bg < H_ACT) && (adj_y_bg < V_ACT);
+    wire req_spr = (adj_x_spr < H_ACT) && (adj_y_spr < V_ACT);
+    wire [8:0] lx_bg  = req_bg  ? adj_x_bg[9:1]  : 0;
+    wire [8:0] ly_bg  = req_bg  ? adj_y_bg[9:1]  : 0;
+    wire [8:0] lx_spr = req_spr ? adj_x_spr[9:1] : 0;
+    wire [8:0] ly_spr = req_spr ? adj_y_spr[9:1] : 0;
+    wire [8:0] lx_poly = draw_x[9:1];
+    wire [8:0] ly_poly = draw_y[9:1];
+
+    wire [7:0] cor_bg;  wire bg_valido;
+    motor_background u_bg (
+        .clk_pix(clk_pix), .reset(rst),
+        .logico_x(lx_bg), .logico_y(ly_bg), .req_valid(req_bg),
+        .scroll_x(bg_sx_q), .scroll_y(bg_sy_q),
+        .tilemap_addr(tilemap_addr), .tilemap_data(tilemap_data),
+        .padrao_addr(padrao_addr), .padrao_data(padrao_data),
+        .cor_indice(cor_bg), .cor_valida(bg_valido)
+    );
+
+    wire [7:0] cor_sprite; wire sprite_ativo;
+    motor_sprites u_spr (
+        .clk_pix(clk_pix), .reset(rst),
+        .logico_x(lx_spr), .logico_y(ly_spr), .req_valid(req_spr),
+        .attr_x_flat(sprite_x_flat), .attr_y_flat(sprite_y_flat),
+        .attr_padrao_flat(sprite_padrao_flat),
+        .attr_en_flat(sprite_en_flat), .attr_pri_flat(sprite_pri_flat),
+        .attr_fliph_flat(sprite_fliph_flat), .attr_flipv_flat(sprite_flipv_flat),
+        .padrao_addr_sprite(padrao_addr_sprite),
+        .padrao_data_sprite(padrao_data_sprite),
+        .cor_indice(cor_sprite), .pixel_ativo(sprite_ativo)
+    );
+
+    wire [7:0] cor_poly; wire poly_ativo;
+    rasterizador_multi u_poly (
+        .clk_pix(clk_pix), .reset(rst),
+        .logico_x($signed({1'b0, lx_poly})),
+        .logico_y($signed({1'b0, ly_poly})),
+        .poly_x_flat(poly_x_flat), .poly_y_flat(poly_y_flat),
+        .poly_size_flat(poly_size_flat), .poly_tipo_flat(poly_tipo_flat),
+        .poly_nverts_flat(poly_nverts_flat), .poly_cor_flat(poly_cor_flat),
+        .poly_habilitado_flat(poly_habilitado_flat),
+        .cor_indice(cor_poly), .pixel_ativo(poly_ativo)
+    );
+
+    wire [7:0] cor_final;
+    compositor u_comp (
+        .enable_bg(enable_bg), .enable_sprite(enable_sprite), .enable_poly(enable_poly),
+        .bg_valido(bg_valido), .cor_bg(cor_bg),
+        .sprite_ativo(sprite_ativo), .cor_sprite(cor_sprite),
+        .poly_ativo(poly_ativo), .cor_poly(cor_poly),
+        .sprite_over_poly(sprite_over_poly),
+        .cor_final(cor_final)
+    );
+
+    // ============================================================
+    //  Frame Buffer Duplo (ping-pong) 320x240 x 8bpp
+    //  - Escrita: composição do quadro no BACK
+    //  - Leitura: VGA lê do FRONT
+    //  - Swap em VSYNC quando houver pedido (instrução SWAP_FB)
+    //    — independente da troca do background (SWAP_BG)
+    // ============================================================
+    wire        fb_swap_now = vsync_borda_pix && swap_fb_pendente;
+    wire        fb_buffer_ativo;
+    wire [16:0] fb_wr_addr;
+    wire        fb_wr_en;
+    wire [16:0] fb_rd_addr;
+    wire [7:0]  fb_rd_data;
+
+    // Endereço linear 320x240: addr = y*320 + x
+    // Usamos as coordenadas lógicas (metade da resolução VGA)
+    assign fb_wr_addr = (ly_poly * 17'd320) + lx_poly;
+    assign fb_rd_addr = (ly_poly * 17'd320) + lx_poly;
+
+    // Escreve apenas quando estamos na área ativa e em pixel "par" (evita escrever 4x)
+    // Como lx/ly já são [9:1], cada valor lógico corresponde a 2x2 pixels físicos.
+    // Escrevemos sempre que req_bg (área ativa) estiver verdadeiro.
+    assign fb_wr_en = req_bg;   // ou (in_h && in_v) se preferir
+
+    frame_buffer_duplo u_fb (
+        .clk          ( clk_pix ),
+        .reset        ( rst ),
+        .swap_now     ( fb_swap_now ),
+        .buffer_ativo ( fb_buffer_ativo ),
+        .wr_en        ( fb_wr_en ),
+        .wr_addr      ( fb_wr_addr ),
+        .wr_data      ( cor_final ),
+        .rd_addr      ( fb_rd_addr ),
+        .rd_data      ( fb_rd_data )
+    );
+
+    // Estado dos buffers visíveis -> clk_sys (ISA: SET_TILE alvo oculto/visível; STATUS)
+    reg [1:0] bg_frente_s, fb_frente_s;
+    always @(posedge clk_sys) begin
+        bg_frente_s <= {bg_frente_s[0], bg_buffer_ativo};
+        fb_frente_s <= {fb_frente_s[0], fb_buffer_ativo};
+    end
+    assign bg_frente_sys = bg_frente_s[1];
+    assign fb_frente_sys = fb_frente_s[1];
+
+    // Para o VGA usamos o dado lido do FRONT buffer.
+    // Como a leitura tem 1 ciclo de latência, o vga_driver já trabalha
+    // com next_x/next_y, o que alinha bem na prática.
+    wire [7:0] color_to_vga = fb_rd_data;
+
+    // vga_driver do PBL1: color_in RRRGGGBB, clock=clk_pix
+    wire [7:0] vga_r, vga_g, vga_b;
+    wire vga_hs, vga_vs, vga_sync, vga_clk_o, vga_blank;
+    vga_driver u_vga (
+        .clock(clk_pix),
+        .reset(rst),
+        .color_in(color_to_vga),
+        .next_x(next_x),
+        .next_y(next_y),
+        .hsync(vga_hs),
+        .vsync(vga_vs),
+        .red(vga_r),
+        .green(vga_g),
+        .blue(vga_b),
+        .sync(vga_sync),
+        .clk(vga_clk_o),
+        .blank(vga_blank)
+    );
+    assign VGA_R = vga_r;
+    assign VGA_G = vga_g;
+    assign VGA_B = vga_b;
+    assign VGA_HS = vga_hs;
+    assign VGA_VS = vga_vs;
+    assign vga_vs_int = vga_vs;
+    assign VGA_CLK = vga_clk_o;
+    assign VGA_BLANK_N = vga_blank;
+    assign VGA_SYNC_N = vga_sync;
+
+endmodule

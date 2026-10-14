@@ -1,0 +1,4 @@
+# T08 Polígono aparece
+0x0000380F   # PLY_COR 0, 0xE0 (vermelho)
+0x00A0500D   # PLY_DRAW 0, 0, 40, 40
+0x00000002   # SWAP_FB

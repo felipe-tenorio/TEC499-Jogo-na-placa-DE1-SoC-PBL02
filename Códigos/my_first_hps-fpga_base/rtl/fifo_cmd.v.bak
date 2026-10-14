@@ -1,0 +1,46 @@
+// fifo_cmd.v — Fila de comandos MMIO (busca passiva), 32 x 32 bits
+module fifo_cmd #(
+    parameter DEPTH = 32,          // deve ser 2**ADDRW (ponteiros dão a volta sozinhos)
+    parameter ADDRW = 5
+)(
+    input  wire        clk,
+    input  wire        reset,
+    input  wire        wr_en,
+    input  wire [31:0] wr_data,
+    output wire        full,
+    input  wire        rd_en,
+    output reg  [31:0] rd_data,
+    output wire        empty,
+    output wire [ADDRW:0] count
+);
+    reg [31:0] mem [0:DEPTH-1];
+    reg [ADDRW-1:0] wr_ptr, rd_ptr;
+    reg [ADDRW:0]   cnt;
+
+    assign full  = (cnt == DEPTH);
+    assign empty = (cnt == 0);
+    assign count = cnt;
+
+    always @(posedge clk) begin
+        if (reset) begin
+            wr_ptr  <= 0;
+            rd_ptr  <= 0;
+            cnt     <= 0;
+            rd_data <= 32'd0;
+        end else begin
+            if (wr_en && !full) begin
+                mem[wr_ptr] <= wr_data;
+                wr_ptr      <= wr_ptr + 1'b1;
+            end
+            if (rd_en && !empty) begin
+                rd_data <= mem[rd_ptr];
+                rd_ptr  <= rd_ptr + 1'b1;
+            end
+            case ({wr_en && !full, rd_en && !empty})
+                2'b10: cnt <= cnt + 1'b1;
+                2'b01: cnt <= cnt - 1'b1;
+                default: ;
+            endcase
+        end
+    end
+endmodule

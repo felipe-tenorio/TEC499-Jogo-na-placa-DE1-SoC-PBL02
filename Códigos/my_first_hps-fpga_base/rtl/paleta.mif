@@ -1,0 +1,67 @@
+-- Arquivo MIF para Paleta de Cores RAM (256 entradas, 8 bits)
+-- Formato da Cor: RRRGGGBB (3-3-2 bits)
+-- Total: 256 bytes
+
+DEPTH = 256;
+WIDTH = 8;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+
+CONTENT BEGIN
+
+-- ==========================================
+-- CORES ESPECÍFICAS UTILIZADAS NO PROJETO
+-- (Baseadas no mapeamento e regras estabelecidas)
+-- ==========================================
+
+00 : 00; -- [00] Transparente / Preto (000-000-00)
+01 : 01; -- [01] Azul Escuro (000-000-01) - Variante de sombra
+03 : 03; -- [03] Azul Corpo Bomberman/Steve/Água (000-000-11)
+08 : 08; -- [08] Cinza Muito Escuro/Quase Preto (000-010-00) - Pavios e Olhos
+11 : 11; -- [11] Roxo/Azulado Escuro (Obsidiana) (000-100-01)
+18 : 18; -- [18] Verde Médio (Folhas/Creeper) (000-110-00)
+1C : 1C; -- [1C] Verde Escuro (Grama/Fundo) (000-111-00)
+22 : 22; -- [22] Cinza/Preto Azulado (Carvão) (001-000-10)
+33 : 33; -- [33] Prata/Azul Claro (Ferro) (001-100-11)
+40 : 40; -- [40] Marrom Médio (Tronco) (010-000-00)
+49 : 49; -- [49] Cinza Escuro/Sombra (Parede/Tijolo) (010-010-01)
+55 : 55; -- [55] Vermelho/Marrom (Bloco de Tijolos) (010-101-01)
+5B : 5B; -- [5B] Cinza Claro c/ Ciano (Diamante) (010-110-11)
+68 : 68; -- [68] Marrom Claro/Terra (Minecraft) (011-010-00)
+77 : 77; -- [77] Branco Azulado (Neve) (011-101-11)
+88 : 88; -- [88] Cinza Médio Avermelhado (Cascalho) (100-010-00)
+92 : 92; -- [92] Cinza Médio (Parede/Pedra/Bomba) (100-100-10)
+99 : 99; -- [99] Cinza Claro/Roxo (Lã Cinza) (100-110-01)
+AA : AA; -- [AA] Dourado/Amarelo (Bloco de Ouro) (101-010-10)
+E0 : E0; -- [E0] Vermelho/Laranja Forte (Fogo/Lava) (111-000-00)
+FC : FC; -- [FC] Laranja/Pele/Areia (Rosto/Balão) (111-111-00)
+FF : FF; -- [FF] Branco (Chapéu/Vidro) (111-111-11)
+
+-- ==========================================
+-- PREENCHIMENTO DO RESTANTE DA PALETA 
+-- (Mapeamento 1:1 direto onde ENDEREÇO = VALOR)
+-- Para que o hardware possa utilizar qualquer cor 8-bit se necessário
+-- ==========================================
+
+02 : 02;
+[04..07] : 04; -- Mapeamento direto (Endereco = Cor)
+[09..10] : 09; -- Mapeamento direto (Endereco = Cor)
+[12..17] : 12; -- Mapeamento direto (Endereco = Cor)
+[19..1B] : 19; -- Mapeamento direto (Endereco = Cor)
+[1D..21] : 1D; -- Mapeamento direto (Endereco = Cor)
+[23..32] : 23; -- Mapeamento direto (Endereco = Cor)
+[34..3F] : 34; -- Mapeamento direto (Endereco = Cor)
+[41..48] : 41; -- Mapeamento direto (Endereco = Cor)
+[4A..54] : 4A; -- Mapeamento direto (Endereco = Cor)
+[56..5A] : 56; -- Mapeamento direto (Endereco = Cor)
+[5C..67] : 5C; -- Mapeamento direto (Endereco = Cor)
+[69..76] : 69; -- Mapeamento direto (Endereco = Cor)
+[78..87] : 78; -- Mapeamento direto (Endereco = Cor)
+[89..91] : 89; -- Mapeamento direto (Endereco = Cor)
+[93..98] : 93; -- Mapeamento direto (Endereco = Cor)
+[9A..A9] : 9A; -- Mapeamento direto (Endereco = Cor)
+[AB..DF] : AB; -- Mapeamento direto (Endereco = Cor)
+[E1..FB] : E1; -- Mapeamento direto (Endereco = Cor)
+[FD..FE] : FD; -- Mapeamento direto (Endereco = Cor)
+
+END;

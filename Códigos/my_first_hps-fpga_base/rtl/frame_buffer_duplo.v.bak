@@ -1,0 +1,66 @@
+// frame_buffer_duplo.v
+// Par de frame buffers 320x240 x 8 bits (cor RRRGGGBB).
+//
+// Funcionamento (ping-pong):
+//   - Escritas vão sempre para o buffer de FUNDO (back).
+//   - Leituras  vêm sempre do buffer da FRENTE (front) → VGA.
+//   - Em swap_now (tipicamente borda de VSYNC com pedido pendente),
+//     front e back trocam de papel. Assim a tela só muda de quadro
+//     completo, sem tearing da composição.
+//
+// Endereço linear: addr = y*320 + x  (y:0..239, x:0..319)
+
+module frame_buffer_duplo (
+    input  wire        clk,
+    input  wire        reset,
+
+    // Controle de troca (1 ciclo em clk_pix, alinhado à VSYNC)
+    input  wire        swap_now,
+    output reg         buffer_ativo,   // 0 = A na frente, 1 = B na frente
+
+    // Porta de escrita (composição do quadro no back)
+    input  wire        wr_en,
+    input  wire [16:0] wr_addr,        // 0 .. 76799
+    input  wire [7:0]  wr_data,
+
+    // Porta de leitura (exibição do front)
+    input  wire [16:0] rd_addr,
+    output reg  [7:0]  rd_data
+);
+
+    localparam integer FB_DEPTH = 76800; // 320*240
+
+    // Dois bancos de memória (inferidos como BRAM dual-port pelo sintetizador)
+    reg [7:0] fb_a [0:FB_DEPTH-1];
+    reg [7:0] fb_b [0:FB_DEPTH-1];
+
+    // Qual banco está na frente: 0→A front/B back, 1→B front/A back
+    always @(posedge clk) begin
+        if (reset)
+            buffer_ativo <= 1'b0;
+        else if (swap_now)
+            buffer_ativo <= ~buffer_ativo;
+    end
+
+    // ----- Escrita no BACK -----
+    always @(posedge clk) begin
+        if (wr_en) begin
+            if (buffer_ativo == 1'b0)
+                fb_b[wr_addr] <= wr_data; // A na frente → escreve em B
+            else
+                fb_a[wr_addr] <= wr_data; // B na frente → escreve em A
+        end
+    end
+
+    // ----- Leitura do FRONT (1 ciclo de latência) -----
+    reg [7:0] rd_a, rd_b;
+    always @(posedge clk) begin
+        rd_a <= fb_a[rd_addr];
+        rd_b <= fb_b[rd_addr];
+    end
+
+    always @(*) begin
+        rd_data = (buffer_ativo == 1'b0) ? rd_a : rd_b;
+    end
+
+endmodule

@@ -1,0 +1,5 @@
+# T03 Sprite aparece
+0x0000004C   # SPR_PAT 0, 1
+0x0190C807   # SPR_POS 0, 100, 100
+0x00000409   # SPR_CFG 0,1,0,0,0  (só habilita)
+0x00000002   # SWAP_FB

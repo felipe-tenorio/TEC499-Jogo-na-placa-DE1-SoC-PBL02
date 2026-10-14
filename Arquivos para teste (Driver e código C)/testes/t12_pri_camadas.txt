@@ -1,0 +1,7 @@
+# T12 Prioridade sprite x polígono (SET_PRI)
+0x0180E807   # SPR_POS 0, 96, 116 (sobre o polígono)
+0x00000002   # SWAP_FB
+0x00000012   # SET_PRI 0 (polígono na frente)
+0x00000002   # SWAP_FB
+0x00000052   # SET_PRI 1 (sprite na frente)
+0x00000002   # SWAP_FB

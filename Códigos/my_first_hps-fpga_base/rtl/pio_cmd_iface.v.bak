@@ -1,0 +1,133 @@
+// pio_cmd_iface.v
+// Interface HPS <-> ISA via PIOs do Platform Designer (sem pinos externos).
+//
+//   pio_cmd_data  : PIO Output, 32 bits  ->  .pio_cmd_data
+//   pio_cmd_push  : PIO Output,  1 bit   ->  .pio_cmd_push_lvl
+//   pio_status    : PIO Input,   8 bits  <-  .pio_status
+//
+// Protocolo:
+//   1) ARM escreve a palavra em pio_cmd_data
+//   2) ARM escreve 1 e depois 0 em pio_cmd_push (borda de subida = push)
+//   3) ARM lê pio_status
+//
+// Tudo é controlado pelo software (sem chaves/botões da placa):
+//
+//   * Palavras com OPCODE = 62 (CTRL) NÃO entram na FIFO. São comandos do
+//     host executados aqui mesmo, na hora — inclusive com a FIFO cheia ou
+//     o coprocessador em HALT:
+//
+//       f[3:0] = palavra[9:6]
+//         1  FILA_ON     modo fila: a FIFO só acumula (antigo SW[1]=1)
+//         2  FILA_OFF    executa a fila normalmente   (antigo SW[1]=0)
+//         3  PASSO       executa UMA instrução da fila (antigo KEY[1])
+//         4  RESET_ISA   limpa FIFO, FSM, HALT e R1..R15
+//         5  RESET_TOTAL RESET_ISA + registradores gráficos + FILA_OFF
+//         6  VER_QTD     pio_status passa a mostrar {1, modo_fila, qtd[5:0]}
+//         7  VER_STATUS  pio_status volta ao normal
+//
+//   * pio_status normal:
+//       [0]busy [1]modo_fila [2]fifo_full [3]fifo_empty [4]vsync [5]halt
+//       [6]tilemap na tela (0=A,1=B) [7]frame buffer na tela (0=A,1=B)
+
+module pio_cmd_iface (
+    input  wire        clk,
+    input  wire        reset,
+    // ---- PIOs exportados do soc_system (internos ao FPGA) ----
+    input  wire [31:0] pio_cmd_data,      // PIO output 32b (HPS -> FPGA)
+    input  wire        pio_cmd_push_lvl,  // PIO output 1b  (HPS -> FPGA)
+    output wire [7:0]  pio_status,        // PIO input  8b  (FPGA -> HPS)
+    // ---- Status do núcleo ISA ----
+    input  wire        busy,
+    input  wire        fifo_full,
+    input  wire        fifo_empty,
+    input  wire [5:0]  fifo_count,
+    input  wire        halt,
+    input  wire        vsync_flag,
+    input  wire        bg_frente,         // tilemap visível: 0=A 1=B
+    input  wire        fb_frente,         // frame buffer visível: 0=A 1=B
+    // ---- Saída para a FIFO da ISA ----
+    output reg         cmd_push,
+    output reg  [31:0] cmd_data,
+    // ---- Controle vindo do software (comando CTRL) ----
+    output reg         modo_fila,         // 1 = FIFO só acumula
+    output reg         passo,             // pulso de 1 ciclo: executa 1 instrução
+    output reg         rst_isa,           // pulso: reset do núcleo ISA
+    output reg         rst_gfx            // pulso: reset dos registradores gráficos
+);
+
+    localparam [5:0] OP_CTRL = 6'd62;
+    localparam [3:0] C_FILA_ON = 4'd1, C_FILA_OFF = 4'd2, C_PASSO = 4'd3,
+                     C_RESET_ISA = 4'd4, C_RESET_TOTAL = 4'd5,
+                     C_VER_QTD = 4'd6, C_VER_STATUS = 4'd7;
+
+    // Detecção de borda de subida no push vindo do PIO (50 MHz -> clk_sys)
+    reg push_d1, push_d2;
+    wire push_edge = push_d1 & ~push_d2;
+
+    wire       eh_ctrl  = (pio_cmd_data[5:0] == OP_CTRL);
+    wire [3:0] ctrl_cmd = pio_cmd_data[9:6];
+
+    reg       ver_qtd;        // página do pio_status
+    reg [1:0] rst_cnt;        // reset por software dura 4 ciclos
+    reg       rst_total_reg;
+
+    always @(posedge clk) begin
+        if (reset) begin
+            push_d1   <= 1'b0;
+            push_d2   <= 1'b0;
+            cmd_push  <= 1'b0;
+            cmd_data  <= 32'd0;
+            modo_fila <= 1'b0;
+            passo     <= 1'b0;
+            ver_qtd   <= 1'b0;
+            rst_cnt   <= 2'd0;
+            rst_total_reg <= 1'b0;
+            rst_isa   <= 1'b0;
+            rst_gfx   <= 1'b0;
+        end else begin
+            push_d1  <= pio_cmd_push_lvl;
+            push_d2  <= push_d1;
+            cmd_push <= 1'b0;
+            passo    <= 1'b0;
+
+            // reset por software: mantém rst_isa/rst_gfx por 4 ciclos
+            if (rst_cnt != 2'd0) begin
+                rst_cnt <= rst_cnt - 2'd1;
+                rst_isa <= 1'b1;
+                rst_gfx <= rst_total_reg;
+            end else begin
+                rst_isa <= 1'b0;
+                rst_gfx <= 1'b0;
+                rst_total_reg <= 1'b0;
+            end
+
+            if (push_edge) begin
+                if (eh_ctrl) begin
+                    case (ctrl_cmd)
+                        C_FILA_ON:     modo_fila <= 1'b1;
+                        C_FILA_OFF:    modo_fila <= 1'b0;
+                        C_PASSO:       passo     <= 1'b1;
+                        C_RESET_ISA:   begin rst_cnt <= 2'd3; rst_isa <= 1'b1; end
+                        C_RESET_TOTAL: begin
+                            rst_cnt <= 2'd3; rst_isa <= 1'b1; rst_gfx <= 1'b1;
+                            rst_total_reg <= 1'b1; modo_fila <= 1'b0;
+                        end
+                        C_VER_QTD:     ver_qtd <= 1'b1;
+                        C_VER_STATUS:  ver_qtd <= 1'b0;
+                        default: ;
+                    endcase
+                end else if (!fifo_full) begin
+                    cmd_data <= pio_cmd_data;
+                    cmd_push <= 1'b1;
+                end
+            end
+        end
+    end
+
+    wire [7:0] status_normal = {fb_frente, bg_frente, halt, vsync_flag,
+                                fifo_empty, fifo_full, modo_fila, busy};
+    wire [7:0] status_qtd    = {1'b1, modo_fila, fifo_count};
+
+    assign pio_status = ver_qtd ? status_qtd : status_normal;
+
+endmodule

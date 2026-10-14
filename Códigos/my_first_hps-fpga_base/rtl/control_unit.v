@@ -1,0 +1,324 @@
+module control_unit (
+    input  wire clk,
+    input  wire reset,
+    input  wire fifo_empty, //sinal de fila vazia
+    output reg fifo_pop,
+    input  wire [31:0] ir,
+    input  wire vsync_borda,
+    //Controle de execuçao (modo fila)
+    input  wire hold,  // 1 = não busca instruções (FIFO só acumula)
+    input  wire step, // pulso: executa 1 instrução enquanto hold=1
+    output reg busy,
+    output reg done_pulse,
+    output reg halt_flag,
+    // GPR
+    output reg  gpr_we,
+    output reg [3:0] gpr_wa,
+    output reg [2:0] alu_op,
+    output reg use_imm,
+    input  wire [15:0] rs_val, // valor de Rs (ir[13:10])
+    input  wire [15:0] rt_val, // valor de Rt (ir[17:14])
+    // Gráfico -> banco_registradores
+    output reg gfx_wr_en,
+    output reg [15:0] gfx_addr,
+    output reg [8:0] gfx_data,
+    // Escrita direta nas memorias de video (SET_TILE / WR_RAM)
+    //   mem_we[0]=tilemap A  [1]=tilemap B  [2]=padroes tiles  [3]=padroes sprites
+    input wire bg_frente, // 0 = tilemap A visivel, 1 = tilemap B visivel
+    input wire fb_frente, // 0 = frame buffer A visivel, 1 = B
+    output reg [3:0] mem_we,
+    output reg [13:0] mem_addr,
+    output reg [7:0] mem_data,
+    output reg [2:0] state
+	
+);
+//Estagios
+    localparam S_IDLE=0, S_FETCH=1, S_DECODE=2, S_EXECUTE=3, S_WB=4, S_HALT=5;
+
+    reg [2:0] next_state;
+    reg [2:0] seq;
+    reg wait_vs_seen;
+    reg buf_ini; // buffer visvel no início de SWAP_FB/SWAP_BG
+
+    wire [5:0] opcode = ir[5:0];
+    wire [3:0] rd     = ir[9:6];
+    wire [25:0] f      = ir[31:6]; // campos G / J
+    wire [17:0] imm    = ir[31:14];// campo imediato I
+	 
+	 //R : 0[31:18] | Rt[17:14] | Rs[13:10] | Rd[9:6] | OPCODE[5:0]
+	//I : Imm[31:14]           | Rs[13:10] | Rd[9:6] | OPCODE[5:0]
+	//G : campos graficos f[25:0] = ir[31:6]         | OPCODE[5:0]
+	//J : alvo/flags      f[25:0] = ir[31:6]         | OPCODE[5:0]
+
+    localparam OP_NOP=0, OP_WAIT_VS=1, OP_SWAP_FB=2, OP_SET_LAYER=3;
+    localparam OP_SET_BG_X=4, OP_SET_BG_Y=5, OP_MOV_BG=6;
+    localparam OP_SPR_POS=7, OP_SPR_MOV=8, OP_SPR_CFG=9, OP_SPR_HIDE=10;
+    localparam OP_SPR_SEL=11, OP_SPR_PAT=12;
+    localparam OP_PLY_DRAW=13, OP_PLY_ADJ=14, OP_PLY_COR=15, OP_PLY_MOV=16, OP_PLY_HIDE=17;
+    localparam OP_SET_PRI=18;
+    localparam OP_ADD=19, OP_SUB=20, OP_MOVI=21, OP_MOV=22, OP_AND=23, OP_OR=24;
+    localparam OP_JMP=25, OP_BEQ=26;
+    localparam OP_SWAP_BG=27, OP_SET_TILE=28, OP_WR_RAM=29;
+    localparam OP_HALT=63;
+
+    //SET_TILE: endereço = linha*40 + coluna
+    wire [4:0]  st_linha  = f[23:19];
+    wire [5:0]  st_coluna = f[18:13];
+    wire [10:0] st_addr   = {st_linha, 5'b0} + {2'b0, st_linha, 3'b0} + {5'b0, st_coluna};
+    wire        st_valido = (st_linha < 5'd30) && (st_coluna < 6'd40);
+    //alvo: 00 = oculto, 01 = visivel, 1x = ambos
+    //oculto= B se A esta na frente (bg_frente=0), senao A
+    wire        st_usa_b  = f[24] ? bg_frente : ~bg_frente;
+    wire [3:0]  st_mask   = f[25] ? 4'b0011 : (st_usa_b ? 4'b0010 : 4'b0001);
+
+    //WR_RAM (escrita na ram)
+    wire [1:0]  wr_mem    = f[25:24];
+    wire [13:0] wr_addr   = f[21:8];
+    // tilemaps tem 2048 posiçoes (11 bits): endereços maiores sao ignorados
+    wire        wr_valido = wr_mem[1] | (wr_addr[13:11] == 3'b000);
+
+    always @(posedge clk) begin
+        if (reset) begin
+            state <= S_IDLE; busy <= 0; done_pulse <= 0; halt_flag <= 0;
+            seq <= 0; wait_vs_seen <= 0; buf_ini <= 0;
+        end else begin
+            state <= next_state;
+            done_pulse <= 0;
+            case (state)
+                S_IDLE:    begin busy <= 0; seq <= 0; end
+                S_FETCH:   busy <= 1;
+                S_DECODE:  begin busy <= 1; seq <= 0; wait_vs_seen <= 0; end
+                S_EXECUTE: begin
+                    busy <= 1;
+                    if (opcode == OP_WAIT_VS && vsync_borda) wait_vs_seen <= 1;
+                    else if (seq != 3'd7) seq <= seq + 1'b1;   // satura (SWAP espera)
+                    if (seq == 3'd0)
+                        buf_ini <= (opcode == OP_SWAP_FB) ? fb_frente : bg_frente;
+                end
+                S_WB:   begin busy <= 1; done_pulse <= 1; end
+                S_HALT: begin busy <= 0; halt_flag <= 1; done_pulse <= 1; end
+            endcase
+        end
+    end
+
+    always @(*) begin
+        next_state = state;
+        fifo_pop = 0; gpr_we = 0; gpr_wa = rd;
+        alu_op = 0; use_imm = 0;
+        gfx_wr_en = 0; gfx_addr = 0; gfx_data = 0;
+        mem_we = 4'b0000; mem_addr = 14'd0; mem_data = 8'd0;
+
+        case (state)
+            // Em modo fila (hold=1) a FIFO so acumula; cada pulso de step
+            // libera UMA instruçao. Com hold=0 a fila e esvaziada em sequencia
+            S_IDLE: if (!fifo_empty && !halt_flag && (!hold || step)) next_state = S_FETCH;
+
+            S_FETCH: begin fifo_pop = 1; next_state = S_DECODE; end
+
+            S_DECODE: next_state = S_EXECUTE;
+
+            S_EXECUTE: begin
+                case (opcode)
+                    OP_NOP: next_state = S_WB;
+
+                    OP_WAIT_VS: if (wait_vs_seen) next_state = S_WB;
+
+                    /*Trocas de buffer: a instruçao so termina quando o buffer visivel realmente trocou. Assim, instruçoes
+						  seguintes (novos movimentos, SET_TILE "oculto") nunca alteram o quadro que esta para ser apresentado*/
+						  
+                    OP_SWAP_FB: begin   // frame buffer duplo (troca o frame buffer)
+                        if (seq == 0) begin
+                            gfx_wr_en = 1; gfx_addr = 16'h000D; gfx_data = 9'd1;
+                        end else if (fb_frente != buf_ini)
+                            next_state = S_WB;
+                    end
+                    OP_SWAP_BG: begin   // tilemap A <-> B do background (muda BG)
+                        if (seq == 0) begin
+                            gfx_wr_en = 1; gfx_addr = 16'h000B; gfx_data = 9'd1;
+                        end else if (bg_frente != buf_ini)
+                            next_state = S_WB;
+                    end
+
+                    OP_SET_LAYER: begin
+                        gfx_wr_en = 1; gfx_addr = 16'h0008;
+                        gfx_data = {6'd0, f[2:0]};
+                        next_state = S_WB;
+                    end
+                    OP_SET_BG_X: begin //posicao X background
+                        gfx_wr_en = 1; gfx_addr = 16'h0001;
+                        gfx_data = {1'b0, f[7:0]};
+                        next_state = S_WB;
+                    end
+                    OP_SET_BG_Y: begin //posicao Y background
+                        gfx_wr_en = 1; gfx_addr = 16'h0002;
+                        gfx_data = {1'b0, f[7:0]};
+                        next_state = S_WB;
+                    end
+                    OP_SET_PRI: begin //modifica prioridade
+                        gfx_wr_en = 1; gfx_addr = 16'h000C;
+                        gfx_data = {8'd0, f[0]};
+                        next_state = S_WB;
+                    end
+
+                    // scroll += (Rs, Rt)
+                    OP_MOV_BG: begin //movimentacao background
+                        if (seq == 0) begin
+                            gfx_wr_en = 1; gfx_addr = 16'h000E;
+                            gfx_data = rs_val[8:0];
+                        end else begin
+                            gfx_wr_en = 1; gfx_addr = 16'h000F;
+                            gfx_data = rt_val[8:0];
+                            next_state = S_WB;
+                        end
+                    end
+
+                    OP_SPR_SEL: begin //seleciona sprite
+                        gfx_wr_en = 1; gfx_addr = 16'h0003;
+                        gfx_data = {4'd0, f[4:0]};
+                        next_state = S_WB;
+                    end
+                    OP_SPR_POS: begin //posicao sprite
+                        if (seq == 0) begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0003;
+                            gfx_data = {4'd0, f[25:21]};
+                        end else if (seq == 1) begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0004;
+                            gfx_data = f[20:12];
+                        end else begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0005;
+                            gfx_data = f[11:3];
+                            next_state = S_WB;
+                        end
+                    end
+                    // sprite += (Rs, Rt)
+                    OP_SPR_MOV: begin //movimentaçao sprite
+                        if (seq == 0) begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0003;
+                            gfx_data = {4'd0, ir[22:18]};
+                        end else if (seq == 1) begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0021;
+                            gfx_data = rs_val[8:0];
+                        end else begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0022;
+                            gfx_data = rt_val[8:0];
+                            next_state = S_WB;
+                        end
+                    end
+                    OP_SPR_CFG: begin
+                        if (seq == 0) begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0003;
+                            gfx_data = {4'd0, f[25:21]};
+                        end else begin
+                            // FLAGS: [5:3]pri [2]en [1]fh [0]fv
+                            // f[4]=en f[3]=fh f[2]=fv f[1:0]=pri
+                            gfx_wr_en = 1; gfx_addr = 16'h0006;
+                            gfx_data = {3'd0, 1'b0, f[1:0], f[4], f[3], f[2]};
+                            next_state = S_WB;
+                        end
+                    end
+                    OP_SPR_HIDE: begin //esconde sprite
+                        if (seq == 0) begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0003;
+                            gfx_data = {4'd0, f[25:21]};
+                        end else begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0006;
+                            gfx_data = 9'd0;
+                            next_state = S_WB;
+                        end
+                    end
+                    OP_SPR_PAT: begin
+                        if (seq == 0) begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0003;
+                            gfx_data = {4'd0, f[25:21]};
+                        end else begin
+                            gfx_wr_en = 1; gfx_addr = 16'h0007;
+                            gfx_data = {4'd0, f[4:0]};
+                            next_state = S_WB;
+                        end
+                    end
+
+                    OP_PLY_DRAW: begin //desenha poligono
+                        if (seq == 0) begin
+                            gfx_wr_en = 1;
+                            gfx_addr = 16'h0030 + {f[25:24], 3'b000};
+                            gfx_data = f[20:12];
+                        end else if (seq == 1) begin
+                            gfx_wr_en = 1;
+                            gfx_addr = 16'h0031 + {f[25:24], 3'b000};
+                            gfx_data = f[11:3];
+                        end else if (seq == 2) begin
+                            gfx_wr_en = 1;
+                            gfx_addr = 16'h0033 + {f[25:24], 3'b000};
+                            gfx_data = {6'd0, f[23:21]};
+                        end else begin
+                            gfx_wr_en = 1;
+                            gfx_addr = 16'h0037 + {f[25:24], 3'b000};
+                            gfx_data = 9'd1;
+                            next_state = S_WB;
+                        end
+                    end
+                    OP_PLY_ADJ: begin
+                        gfx_wr_en = 1;
+                        gfx_addr = 16'h0032 + {imm[10:9], 3'b000};   // slot = ir[24:23]
+                        gfx_data = imm[8:0];                         // size = ir[22:14]
+                        next_state = S_WB;
+                    end
+                    OP_PLY_COR: begin //cor poligono
+                        gfx_wr_en = 1;
+                        gfx_addr = 16'h0036 + {f[25:24], 3'b000};
+                        gfx_data = {1'b0, f[7:0]};
+                        next_state = S_WB;
+                    end
+                    // poligono += (Rs, Rt)   — 0x50 + slot*2 (+0 = dx, +1 = dy)
+                    OP_PLY_MOV: begin //movimentacao poligono
+                        if (seq == 0) begin
+                            gfx_wr_en = 1;
+                            gfx_addr = 16'h0050 + {ir[19:18], 1'b0};
+                            gfx_data = rs_val[8:0];
+                        end else begin
+                            gfx_wr_en = 1;
+                            gfx_addr = 16'h0051 + {ir[19:18], 1'b0};
+                            gfx_data = rt_val[8:0];
+                            next_state = S_WB;
+                        end
+                    end
+                    OP_PLY_HIDE: begin //esconde poligono
+                        gfx_wr_en = 1;
+                        gfx_addr = 16'h0037 + {f[25:24], 3'b000};
+                        gfx_data = 9'd0;
+                        next_state = S_WB;
+                    end
+
+                    //Memorias de video
+                    OP_SET_TILE: begin
+                        mem_we   = st_valido ? st_mask : 4'b0000;
+                        mem_addr = {3'b000, st_addr};
+                        mem_data = f[7:0];
+                        next_state = S_WB;
+                    end
+                    OP_WR_RAM: begin //escrita na ram
+                        mem_we   = wr_valido ? (4'b0001 << wr_mem) : 4'b0000;
+                        mem_addr = wr_addr;
+                        mem_data = f[7:0];
+                        next_state = S_WB;
+                    end
+					//operacoaes para os registradoes
+                    OP_ADD: begin alu_op=3'b000; gpr_we=1; next_state=S_WB; end
+                    OP_SUB: begin alu_op=3'b001; gpr_we=1; next_state=S_WB; end
+                    OP_AND: begin alu_op=3'b010; gpr_we=1; next_state=S_WB; end
+                    OP_OR:  begin alu_op=3'b011; gpr_we=1; next_state=S_WB; end
+                    OP_MOV: begin alu_op=3'b100; gpr_we=1; next_state=S_WB; end
+                    OP_MOVI:begin use_imm=1;     gpr_we=1; next_state=S_WB; end
+
+                    OP_JMP, OP_BEQ: next_state = S_WB; // host controla fluxo na busca passiva
+                    OP_HALT: next_state = S_HALT;
+                    default: next_state = S_WB;
+                endcase
+            end
+
+            S_WB:   next_state = S_IDLE;
+            S_HALT: next_state = S_HALT;
+            default: next_state = S_IDLE;
+        endcase
+    end
+endmodule

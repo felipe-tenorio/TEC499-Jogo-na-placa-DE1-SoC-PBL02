@@ -1,0 +1,19 @@
+# T15 SET_TILE e WR_RAM (começa com tilemap A visível)
+0x00000004   # SET_BG_X 0
+0x00000005   # SET_BG_Y 0
+0x4000001C   # SET_TILE 1, 0, 0, 0 (visível)
+0x00000002   # SWAP_FB
+0x0208001C   # SET_TILE 0, 1, 1, 0 (oculto: não aparece)
+0x00000002   # SWAP_FB
+0x0000001B   # SWAP_BG (agora aparece no B)
+0x00000002   # SWAP_FB
+0x8410001C   # SET_TILE 2, 2, 2, 0 (ambos)
+0x00000002   # SWAP_FB
+0x7E00001C   # SET_TILE 1, 31, 0, 0 (inválido: ignorado)
+0x0000C01D   # WR_RAM 0, 3, 0x00 (tilemap A)
+0x4000C01D   # WR_RAM 1, 3, 0x00 (tilemap B)
+0x80503FDD   # WR_RAM 2, 0x140, 0xFF (padrão tile 5)
+0x80507FDD   # WR_RAM 2, 0x141, 0xFF
+0xC062381D   # WR_RAM 3, 0x188, 0xE0 (padrão sprite 1)
+0x0000001B   # SWAP_BG (volta ao A)
+0x00000002   # SWAP_FB

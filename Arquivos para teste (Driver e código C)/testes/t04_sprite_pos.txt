@@ -1,0 +1,3 @@
+# T04 Sprite: movimento absoluto
+0x03207807   # SPR_POS 0, 200, 60
+0x00000002   # SWAP_FB

@@ -1,0 +1,3 @@
+# T09 Polígono: movimento absoluto
+0x0140F00D   # PLY_DRAW 0, 0, 80, 120
+0x00000002   # SWAP_FB

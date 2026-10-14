@@ -1,0 +1,2770 @@
+-- Arquivo MIF da Memoria de Video (Tiles)
+-- 256 tiles x 64 bytes = 16384 bytes
+DEPTH = 16384;
+WIDTH = 8;
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+
+CONTENT BEGIN
+
+-- Sprite 0 - Vazio / Transparente
+[0000..003F] : 00;
+
+-- Sprite 1 - bomberman.png
+[0040..004F] : FF;
+[0050..005F] : 03;
+[0060..0067] : FF;
+[0068..007F] : 00;
+
+-- Sprite 2 - Parte do Background
+[0080..00BF] : D5;
+
+-- Sprite 3 - Parte do Background
+[00C0..00FF] : DA;
+
+-- Sprite 4 - Parte do Background
+[0100..013F] : B1;
+
+-- Sprite 5 - Parte do Background
+[0140..017F] : AD;
+
+-- Sprite 6 - Parte do Background
+[0180..01BF] : 4D;
+
+-- Sprite 7 - Parte do Background
+[01C0..01C7] : 94;
+[01C8..01FF] : 48;
+
+-- Sprite 8 - Parte do Background
+[0200..0217] : B1;
+[0218..023F] : D5;
+
+-- Sprite 9 - Parte do Background
+[0240..0247] : 49;
+[0248..027F] : 4D;
+
+-- Sprite 10 - Parte do Background
+[0280..02BD] : B1;
+[02BE..02BF] : D5;
+
+-- Sprite 11 - Parte do Background
+[02C0..02C1] : B1;
+[02C2..02FF] : D5;
+
+-- Sprite 12 - Parte do Background
+[0300..030F] : B1;
+[0310..033F] : D5;
+
+-- Sprite 13 - Parte do Background
+[0340..037E] : D5;
+037F : B1;
+
+-- Sprite 14 - Parte do Background
+[0380..039F] : 48;
+[03A0..03A7] : 49;
+[03A8..03BF] : 4D;
+
+-- Sprite 15 - Parte do Background
+[03C0..03CF] : AD;
+[03D0..03FF] : B1;
+
+-- Sprite 16 - Parte do Background
+[0400..0427] : AD;
+[0428..043F] : B1;
+
+-- Sprite 17 - Parte do Background
+[0440..0446] : D5;
+0447 : B1;
+[0448..047F] : D5;
+
+-- Sprite 18 - Parte do Background
+[0480..04B8] : D5;
+04B9 : B1;
+[04BA..04BF] : D5;
+
+-- Sprite 19 - Parte do Background
+[04C0..04F7] : D5;
+[04F8..04FB] : B1;
+[04FC..04FF] : D5;
+
+-- Sprite 20 - Parte do Background
+[0500..0504] : D5;
+[0505..0507] : DA;
+[0508..050B] : D5;
+[050C..053F] : DA;
+
+-- Sprite 21 - Parte do Background
+[0540..0541] : 84;
+[0542..0545] : 89;
+[0546..0547] : 08;
+[0548..0549] : 84;
+[054A..054D] : 89;
+[054E..054F] : 08;
+[0550..0551] : 84;
+[0552..0555] : 89;
+[0556..0557] : 08;
+[0558..0559] : 84;
+[055A..055D] : 89;
+[055E..055F] : 08;
+[0560..0561] : 84;
+[0562..0565] : 89;
+[0566..0567] : 08;
+[0568..0569] : 84;
+[056A..056D] : 89;
+[056E..056F] : 08;
+[0570..0571] : 84;
+[0572..0575] : 89;
+[0576..0577] : 08;
+[0578..0579] : 84;
+[057A..057D] : 89;
+[057E..057F] : 08;
+
+-- Sprite 22 - Parte do Background
+[0580..0581] : 84;
+0582 : AD;
+[0583..0585] : 89;
+[0586..0589] : 84;
+058A : AD;
+[058B..058D] : 89;
+[058E..0591] : 84;
+0592 : AD;
+[0593..0595] : 89;
+[0596..0599] : 84;
+059A : AD;
+[059B..059D] : 89;
+[059E..05A1] : 84;
+05A2 : AD;
+[05A3..05A5] : 89;
+[05A6..05A9] : 84;
+05AA : AD;
+[05AB..05AD] : 89;
+[05AE..05B1] : 84;
+05B2 : AD;
+[05B3..05B5] : 89;
+[05B6..05B9] : 84;
+05BA : AD;
+[05BB..05BD] : 89;
+[05BE..05BF] : 84;
+
+-- Sprite 23 - Parte do Background
+[05C0..05C7] : 94;
+[05C8..05F7] : 48;
+05F8 : 49;
+[05F9..05FF] : 48;
+
+-- Sprite 24 - Parte do Background
+[0600..0605] : 94;
+[0606..0607] : 91;
+[0608..063F] : 48;
+
+-- Sprite 25 - Parte do Background
+[0640..0643] : 49;
+[0644..067F] : 4D;
+
+-- Sprite 26 - Parte do Background
+0680 : AD;
+[0681..0687] : B1;
+[0688..068A] : AD;
+[068B..068F] : B1;
+[0690..0692] : AD;
+[0693..0697] : B1;
+[0698..069D] : AD;
+[069E..069F] : B1;
+[06A0..06A5] : AD;
+[06A6..06A7] : B1;
+[06A8..06BF] : AD;
+
+-- Sprite 27 - Parte do Background
+[06C0..06F7] : B1;
+[06F8..06F9] : AD;
+[06FA..06FF] : B1;
+
+-- Sprite 28 - Parte do Background
+[0700..0701] : B1;
+[0702..0707] : AD;
+[0708..070B] : B1;
+[070C..070F] : AD;
+[0710..0714] : B1;
+[0715..0717] : AD;
+[0718..071D] : B1;
+[071E..071F] : AD;
+[0720..0725] : B1;
+[0726..0727] : AD;
+[0728..072D] : B1;
+[072E..072F] : AD;
+[0730..0736] : B1;
+0737 : AD;
+[0738..073E] : B1;
+073F : AD;
+
+-- Sprite 29 - Parte do Background
+[0740..0746] : B1;
+0747 : AD;
+[0748..074E] : B1;
+074F : AD;
+[0750..0756] : B1;
+0757 : AD;
+[0758..075E] : B1;
+075F : AD;
+[0760..0766] : B1;
+0767 : AD;
+[0768..076E] : B1;
+076F : AD;
+[0770..0776] : B1;
+0777 : AD;
+[0778..077E] : B1;
+077F : AD;
+
+-- Sprite 30 - Parte do Background
+[0780..079F] : AD;
+[07A0..07BF] : B1;
+
+-- Sprite 31 - Parte do Background
+07C0 : AD;
+[07C1..07C7] : B1;
+07C8 : AD;
+[07C9..07F3] : B1;
+[07F4..07F7] : AD;
+[07F8..07FB] : B1;
+[07FC..07FF] : AD;
+
+-- Sprite 32 - Parte do Background
+[0800..0806] : B1;
+0807 : AD;
+[0808..0816] : B1;
+0817 : AD;
+[0818..0822] : B1;
+0823 : 89;
+[0824..0827] : AD;
+[0828..082A] : B1;
+[082B..083F] : AD;
+
+-- Sprite 33 - Parte do Background
+[0840..0842] : AD;
+[0843..0847] : B1;
+[0848..084B] : AD;
+[084C..084F] : B1;
+[0850..0853] : AD;
+[0854..0857] : B1;
+[0858..085D] : AD;
+[085E..085F] : B1;
+[0860..087F] : AD;
+
+-- Sprite 34 - Parte do Background
+[0880..089F] : B1;
+[08A0..08A1] : AD;
+[08A2..08A7] : B1;
+[08A8..08A9] : AD;
+[08AA..08AF] : B1;
+[08B0..08B2] : AD;
+[08B3..08B7] : B1;
+[08B8..08BB] : AD;
+[08BC..08BF] : B1;
+
+-- Sprite 35 - Parte do Background
+08C0 : B1;
+[08C1..08C7] : AD;
+08C8 : B1;
+[08C9..08CF] : AD;
+[08D0..08D2] : B1;
+[08D3..08D7] : AD;
+[08D8..08DA] : B1;
+[08DB..08DF] : AD;
+[08E0..08E2] : B1;
+[08E3..08E7] : AD;
+[08E8..08EA] : B1;
+[08EB..08EF] : AD;
+[08F0..08F4] : B1;
+[08F5..08F7] : AD;
+[08F8..08FC] : B1;
+08FD : AD;
+08FE : 89;
+08FF : AD;
+
+-- Sprite 36 - Parte do Background
+[0900..0937] : AD;
+[0938..0939] : B1;
+[093A..093F] : AD;
+
+-- Sprite 37 - Parte do Background
+[0940..095F] : B1;
+0960 : AD;
+[0961..0967] : B1;
+0968 : AD;
+[0969..096F] : B1;
+[0970..0971] : AD;
+[0972..0977] : B1;
+[0978..0979] : AD;
+[097A..097F] : B1;
+
+-- Sprite 38 - Parte do Background
+[0980..0986] : B1;
+0987 : AD;
+[0988..098E] : B1;
+098F : AD;
+[0990..0996] : B1;
+0997 : AD;
+[0998..099D] : B1;
+[099E..099F] : AD;
+[09A0..09A3] : B1;
+[09A4..09A7] : AD;
+[09A8..09AC] : B1;
+[09AD..09AF] : AD;
+[09B0..09B6] : B1;
+09B7 : AD;
+[09B8..09BE] : B1;
+09BF : AD;
+
+-- Sprite 39 - Parte do Background
+[09C0..09CF] : B1;
+[09D0..09F7] : AD;
+[09F8..09FF] : B1;
+
+-- Sprite 40 - Parte do Background
+[0A00..0A05] : B1;
+0A06 : 89;
+0A07 : AD;
+[0A08..0A0D] : B1;
+[0A0E..0A33] : AD;
+[0A34..0A3F] : B1;
+
+-- Sprite 41 - Parte do Background
+0A40 : AD;
+0A41 : B1;
+[0A42..0A62] : AD;
+[0A63..0A67] : B1;
+[0A68..0A6A] : AD;
+[0A6B..0A7F] : B1;
+
+-- Sprite 42 - Parte do Background
+[0A80..0A8B] : AD;
+[0A8C..0A8F] : B1;
+[0A90..0A91] : AD;
+[0A92..0A98] : B1;
+0A99 : AD;
+[0A9A..0ABF] : B1;
+
+-- Sprite 43 - Parte do Background
+[0AC0..0AC7] : AD;
+[0AC8..0ACB] : B1;
+[0ACC..0ACF] : AD;
+[0AD0..0AD6] : B1;
+0AD7 : AD;
+[0AD8..0ADE] : B1;
+0ADF : 89;
+[0AE0..0AFF] : B1;
+
+-- Sprite 44 - Parte do Background
+[0B00..0B18] : AD;
+0B19 : B1;
+[0B1A..0B1F] : AD;
+[0B20..0B24] : B1;
+[0B25..0B27] : AD;
+[0B28..0B2B] : B1;
+[0B2C..0B2F] : AD;
+0B30 : B1;
+[0B31..0B37] : AD;
+0B38 : B1;
+[0B39..0B3F] : AD;
+
+-- Sprite 45 - Parte do Background
+[0B40..0B45] : AD;
+[0B46..0B47] : B1;
+[0B48..0B4D] : AD;
+[0B4E..0B4F] : B1;
+[0B50..0B56] : AD;
+0B57 : B1;
+[0B58..0B5E] : AD;
+0B5F : B1;
+[0B60..0B7F] : AD;
+
+-- Sprite 46 - Parte do Background
+[0B80..0B9F] : B1;
+0BA0 : AD;
+[0BA1..0BA7] : B1;
+0BA8 : AD;
+[0BA9..0BAF] : B1;
+[0BB0..0BB4] : AD;
+[0BB5..0BB7] : B1;
+[0BB8..0BBC] : AD;
+[0BBD..0BBF] : B1;
+
+-- Sprite 47 - Parte do Background
+[0BC0..0BC6] : B1;
+0BC7 : AD;
+[0BC8..0BFF] : B1;
+
+-- Sprite 48 - Parte do Background
+[0C00..0C0F] : AD;
+[0C10..0C12] : B1;
+[0C13..0C17] : AD;
+[0C18..0C1A] : B1;
+[0C1B..0C1F] : AD;
+[0C20..0C26] : B1;
+0C27 : AD;
+[0C28..0C2E] : B1;
+0C2F : AD;
+[0C30..0C3F] : B1;
+
+-- Sprite 49 - Parte do Background
+[0C40..0C4E] : AD;
+0C4F : B1;
+[0C50..0C55] : AD;
+[0C56..0C57] : B1;
+[0C58..0C5C] : AD;
+[0C5D..0C5F] : B1;
+[0C60..0C63] : AD;
+[0C64..0C67] : B1;
+[0C68..0C6B] : AD;
+[0C6C..0C7F] : B1;
+
+-- Sprite 50 - Parte do Background
+[0C80..0C81] : AD;
+[0C82..0CBF] : B1;
+
+-- Sprite 51 - Parte do Background
+[0CC0..0CC1] : B1;
+[0CC2..0CC7] : AD;
+[0CC8..0CC9] : B1;
+0CCA : AD;
+0CCB : B1;
+[0CCC..0CCF] : AD;
+[0CD0..0CD3] : B1;
+[0CD4..0CD7] : AD;
+[0CD8..0CDC] : B1;
+[0CDD..0CDF] : AD;
+[0CE0..0CE5] : B1;
+[0CE6..0CE7] : AD;
+[0CE8..0CED] : B1;
+[0CEE..0CEF] : AD;
+[0CF0..0CFF] : B1;
+
+-- Sprite 52 - Parte do Background
+[0D00..0D1C] : AD;
+[0D1D..0D1E] : B1;
+[0D1F..0D22] : AD;
+[0D23..0D27] : B1;
+[0D28..0D29] : AD;
+[0D2A..0D2E] : B1;
+0D2F : 91;
+[0D30..0D32] : AD;
+[0D33..0D3F] : B1;
+
+-- Sprite 53 - Parte do Background
+[0D40..0D6F] : AD;
+[0D70..0D7F] : B1;
+
+-- Sprite 54 - Parte do Background
+[0D80..0DA7] : AD;
+0DA8 : B1;
+[0DA9..0DAF] : AD;
+0DB0 : B1;
+[0DB1..0DB7] : AD;
+[0DB8..0DBF] : B1;
+
+-- Sprite 55 - Parte do Background
+[0DC0..0DEB] : AD;
+0DEC : B1;
+[0DED..0DF3] : AD;
+[0DF4..0DFF] : B1;
+
+-- Sprite 56 - Parte do Background
+[0E00..0E01] : AD;
+[0E02..0E07] : B1;
+[0E08..0E09] : AD;
+[0E0A..0E0F] : B1;
+[0E10..0E11] : AD;
+[0E12..0E17] : B1;
+[0E18..0E19] : AD;
+[0E1A..0E1F] : B1;
+[0E20..0E21] : AD;
+[0E22..0E27] : B1;
+0E28 : AD;
+[0E29..0E3F] : B1;
+
+-- Sprite 57 - Parte do Background
+[0E40..0E73] : B1;
+[0E74..0E75] : AD;
+[0E76..0E7B] : B1;
+[0E7C..0E7D] : AD;
+[0E7E..0E7F] : B1;
+
+-- Sprite 58 - Parte do Background
+[0E80..0E81] : B1;
+[0E82..0E87] : AD;
+[0E88..0E8C] : B1;
+[0E8D..0E8E] : AD;
+[0E8F..0EBF] : B1;
+
+-- Sprite 59 - Parte do Background
+[0EC0..0ECB] : AD;
+0ECC : 91;
+[0ECD..0ECE] : B1;
+0ECF : AD;
+[0ED0..0ED6] : B1;
+0ED7 : AD;
+[0ED8..0EFF] : B1;
+
+-- Sprite 60 - Parte do Background
+[0F00..0F1F] : AD;
+0F20 : B1;
+[0F21..0F27] : AD;
+[0F28..0F29] : B1;
+[0F2A..0F2F] : AD;
+[0F30..0F32] : B1;
+[0F33..0F37] : AD;
+[0F38..0F3F] : B1;
+
+-- Sprite 61 - Parte do Background
+[0F40..0F71] : AD;
+[0F72..0F7F] : B1;
+
+-- Sprite 62 - Parte do Background
+[0F80..0FAF] : AD;
+[0FB0..0FB4] : B1;
+[0FB5..0FB7] : AD;
+[0FB8..0FBF] : B1;
+
+-- Sprite 63 - Parte do Background
+[0FC0..0FD3] : B1;
+[0FD4..0FD7] : AD;
+[0FD8..0FDD] : B1;
+[0FDE..0FDF] : AD;
+[0FE0..0FE5] : B1;
+[0FE6..0FE7] : AD;
+[0FE8..0FFF] : B1;
+
+-- Sprite 64 - Parte do Background
+[1000..1001] : B1;
+[1002..1007] : AD;
+[1008..1009] : B1;
+[100A..1027] : AD;
+[1028..1029] : B1;
+[102A..102F] : AD;
+[1030..1031] : B1;
+[1032..1037] : AD;
+[1038..103F] : B1;
+
+-- Sprite 65 - Parte do Background
+[1040..1077] : AD;
+[1078..107A] : B1;
+[107B..107F] : AD;
+
+-- Sprite 66 - Parte do Background
+[1080..10BB] : AD;
+[10BC..10BF] : B1;
+
+-- Sprite 67 - Parte do Background
+[10C0..10CB] : AD;
+[10CC..10CF] : B1;
+[10D0..10D3] : AD;
+[10D4..10D7] : B1;
+[10D8..10D9] : AD;
+[10DA..10DF] : B1;
+[10E0..10E1] : AD;
+[10E2..10E7] : B1;
+[10E8..10E9] : AD;
+[10EA..10EF] : B1;
+[10F0..10F1] : AD;
+[10F2..10FF] : B1;
+
+-- Sprite 68 - Parte do Background
+[1100..1106] : AD;
+[1107..110B] : B1;
+[110C..110E] : AD;
+[110F..1113] : B1;
+[1114..1117] : AD;
+[1118..111D] : B1;
+[111E..111F] : AD;
+[1120..1126] : B1;
+1127 : AD;
+[1128..113F] : B1;
+
+-- Sprite 69 - Parte do Background
+[1140..114F] : B1;
+1150 : AD;
+[1151..1157] : B1;
+1158 : AD;
+[1159..115F] : B1;
+[1160..1162] : AD;
+[1163..117F] : B1;
+
+-- Sprite 70 - Parte do Background
+[1180..11BB] : B1;
+[11BC..11BF] : D5;
+
+-- Sprite 71 - Parte do Background
+[11C0..11ED] : B1;
+11EE : D5;
+[11EF..11F4] : B1;
+[11F5..11FA] : D5;
+[11FB..11FC] : B1;
+[11FD..11FF] : D5;
+
+-- Sprite 72 - Parte do Background
+[1200..1228] : B1;
+[1229..122A] : D5;
+[122B..122F] : B1;
+[1230..1232] : D5;
+[1233..1237] : B1;
+[1238..123A] : D5;
+[123B..123F] : B1;
+
+-- Sprite 73 - Parte do Background
+[1240..1249] : B1;
+124A : D5;
+[124B..127F] : B1;
+
+-- Sprite 74 - Parte do Background
+[1280..1283] : B1;
+[1284..1287] : AD;
+[1288..128B] : B1;
+[128C..128F] : AD;
+[1290..1292] : B1;
+[1293..1297] : AD;
+[1298..129A] : B1;
+[129B..129F] : AD;
+[12A0..12A2] : B1;
+[12A3..12A7] : AD;
+[12A8..12AA] : B1;
+12AB : AD;
+[12AC..12B2] : B1;
+12B3 : AD;
+[12B4..12BF] : B1;
+
+-- Sprite 75 - Parte do Background
+[12C0..12C3] : AD;
+[12C4..12C7] : B1;
+[12C8..12CB] : AD;
+[12CC..12CF] : B1;
+[12D0..12D2] : AD;
+[12D3..12D7] : B1;
+[12D8..12D9] : AD;
+[12DA..12DF] : B1;
+12E0 : AD;
+[12E1..12FF] : B1;
+
+-- Sprite 76 - Parte do Background
+[1300..1314] : B1;
+[1315..1317] : AD;
+[1318..131A] : B1;
+[131B..131F] : AD;
+[1320..1321] : B1;
+[1322..1327] : AD;
+[1328..132B] : B1;
+[132C..132F] : AD;
+[1330..1333] : B1;
+[1334..1337] : AD;
+[1338..133E] : B1;
+133F : AD;
+
+-- Sprite 77 - Parte do Background
+[1340..134F] : B1;
+1350 : AD;
+[1351..1357] : B1;
+1358 : AD;
+[1359..135F] : B1;
+[1360..137F] : AD;
+
+-- Sprite 78 - Parte do Background
+[1380..139F] : B1;
+[13A0..13A2] : AD;
+[13A3..13A7] : B1;
+[13A8..13AA] : AD;
+[13AB..13AF] : B1;
+[13B0..13BF] : AD;
+
+-- Sprite 79 - Parte do Background
+[13C0..13EF] : B1;
+[13F0..13F3] : AD;
+[13F4..13F7] : B1;
+[13F8..13FB] : AD;
+[13FC..13FF] : B1;
+
+-- Sprite 80 - Parte do Background
+[1400..1402] : B1;
+[1403..1407] : AD;
+[1408..143E] : B1;
+143F : D5;
+
+-- Sprite 81 - Parte do Background
+[1440..1447] : AD;
+[1448..147F] : B1;
+
+-- Sprite 82 - Parte do Background
+[1480..1487] : AD;
+[1488..14A7] : B1;
+[14A8..14AF] : AD;
+14B0 : B1;
+[14B1..14B7] : AD;
+[14B8..14BC] : B1;
+[14BD..14BF] : AD;
+
+-- Sprite 83 - Parte do Background
+[14C0..14C7] : AD;
+[14C8..14E7] : B1;
+[14E8..14EA] : AD;
+[14EB..14EF] : B1;
+[14F0..14F2] : AD;
+[14F3..14F7] : B1;
+[14F8..14FE] : AD;
+14FF : B1;
+
+-- Sprite 84 - Parte do Background
+[1500..1517] : AD;
+[1518..151C] : B1;
+[151D..151F] : AD;
+[1520..1524] : B1;
+[1525..1527] : AD;
+[1528..153F] : B1;
+
+-- Sprite 85 - Parte do Background
+[1540..154D] : AD;
+[154E..154F] : B1;
+[1550..1555] : AD;
+[1556..1557] : B1;
+[1558..155C] : AD;
+[155D..155F] : B1;
+[1560..1564] : AD;
+[1565..157F] : B1;
+
+-- Sprite 86 - Parte do Background
+[1580..1587] : AD;
+[1588..15AA] : B1;
+[15AB..15AF] : AD;
+[15B0..15B2] : B1;
+[15B3..15BF] : AD;
+
+-- Sprite 87 - Parte do Background
+[15C0..15C2] : AD;
+[15C3..15E7] : B1;
+[15E8..15FF] : AD;
+
+-- Sprite 88 - Parte do Background
+[1600..1627] : B1;
+[1628..163F] : AD;
+
+-- Sprite 89 - Parte do Background
+[1640..165D] : B1;
+165E : AD;
+[165F..1665] : B1;
+[1666..167F] : AD;
+
+-- Sprite 90 - Parte do Background
+[1680..169F] : B1;
+[16A0..16BF] : AD;
+
+-- Sprite 91 - Parte do Background
+[16C0..16D0] : B1;
+[16D1..16D2] : AD;
+[16D3..16D7] : B1;
+[16D8..16DA] : AD;
+[16DB..16DF] : B1;
+[16E0..16E3] : AD;
+[16E4..16E7] : B1;
+[16E8..16FF] : AD;
+
+-- Sprite 92 - Parte do Background
+[1700..1739] : B1;
+[173A..173F] : D5;
+
+-- Sprite 93 - Parte do Background
+[1740..175D] : B1;
+[175E..175F] : D5;
+[1760..1765] : B1;
+[1766..1767] : D5;
+[1768..176D] : B1;
+[176E..176F] : D5;
+[1770..1774] : B1;
+[1775..1777] : D5;
+[1778..177B] : B1;
+[177C..177F] : D5;
+
+-- Sprite 94 - Parte do Background
+[1780..1797] : B1;
+[1798..179E] : D5;
+179F : B1;
+[17A0..17A6] : D5;
+17A7 : B1;
+[17A8..17BF] : D5;
+
+-- Sprite 95 - Parte do Background
+[17C0..17E7] : B1;
+[17E8..17EA] : D5;
+[17EB..17EF] : B1;
+[17F0..17F2] : D5;
+[17F3..17F7] : B1;
+[17F8..17FE] : D5;
+17FF : B1;
+
+-- Sprite 96 - Parte do Background
+[1800..181D] : B1;
+[181E..181F] : D5;
+[1820..1821] : B1;
+[1822..1823] : D5;
+[1824..1827] : B1;
+[1828..182D] : D5;
+[182E..182F] : B1;
+[1830..1836] : D5;
+1837 : B1;
+[1838..183F] : D5;
+
+-- Sprite 97 - Parte do Background
+[1840..1864] : B1;
+1865 : D5;
+[1866..1867] : B1;
+[1868..1877] : D5;
+[1878..1879] : B1;
+[187A..187F] : D5;
+
+-- Sprite 98 - Parte do Background
+[1880..1883] : B1;
+[1884..1887] : D5;
+[1888..188B] : B1;
+[188C..188F] : D5;
+[1890..1893] : B1;
+[1894..1897] : D5;
+[1898..1899] : B1;
+[189A..189F] : D5;
+[18A0..18A1] : B1;
+[18A2..18AF] : D5;
+18B0 : B1;
+[18B1..18BF] : D5;
+
+-- Sprite 99 - Parte do Background
+[18C0..18C4] : D5;
+[18C5..18C7] : B1;
+[18C8..18FF] : D5;
+
+-- Sprite 100 - Parte do Background
+1900 : B1;
+[1901..1903] : D5;
+[1904..1905] : B1;
+[1906..193F] : D5;
+
+-- Sprite 101 - Parte do Background
+[1940..1943] : D5;
+[1944..1947] : B1;
+[1948..194B] : D5;
+[194C..194F] : B1;
+[1950..1953] : D5;
+[1954..1957] : B1;
+[1958..195D] : D5;
+[195E..195F] : B1;
+[1960..1965] : D5;
+[1966..1967] : B1;
+[1968..1974] : D5;
+[1975..1977] : B1;
+[1978..197F] : D5;
+
+-- Sprite 102 - Parte do Background
+[1980..1999] : B1;
+199A : D5;
+199B : B1;
+[199C..199D] : D5;
+[199E..19A1] : B1;
+19A2 : D5;
+19A3 : B1;
+[19A4..19A5] : D5;
+[19A6..19A7] : B1;
+[19A8..19AA] : D5;
+19AB : B1;
+[19AC..19B2] : D5;
+19B3 : B1;
+[19B4..19BA] : D5;
+19BB : B1;
+[19BC..19BF] : D5;
+
+-- Sprite 103 - Parte do Background
+[19C0..19DE] : B1;
+19DF : D5;
+[19E0..19E6] : B1;
+19E7 : D5;
+[19E8..19EC] : B1;
+[19ED..19EF] : D5;
+[19F0..19F4] : B1;
+[19F5..19F9] : D5;
+[19FA..19FE] : B1;
+19FF : D5;
+
+-- Sprite 104 - Parte do Background
+[1A00..1A17] : B1;
+1A18 : D5;
+[1A19..1A1F] : B1;
+1A20 : D5;
+[1A21..1A27] : B1;
+[1A28..1A2C] : D5;
+[1A2D..1A2F] : B1;
+[1A30..1A34] : D5;
+[1A35..1A37] : B1;
+[1A38..1A3F] : D5;
+
+-- Sprite 105 - Parte do Background
+[1A40..1A77] : B1;
+[1A78..1A79] : D5;
+[1A7A..1A7F] : B1;
+
+-- Sprite 106 - Parte do Background
+[1A80..1A87] : AD;
+[1A88..1A8B] : B1;
+[1A8C..1A8F] : AD;
+[1A90..1A93] : B1;
+[1A94..1A97] : AD;
+[1A98..1ABF] : B1;
+
+-- Sprite 107 - Parte do Background
+[1AC0..1AD7] : AD;
+1AD8 : B1;
+[1AD9..1ADF] : AD;
+1AE0 : B1;
+[1AE1..1AE7] : AD;
+[1AE8..1AFF] : B1;
+
+-- Sprite 108 - Parte do Background
+[1B00..1B07] : B1;
+[1B08..1B0B] : D5;
+[1B0C..1B0F] : B1;
+[1B10..1B13] : D5;
+[1B14..1B17] : B1;
+[1B18..1B1B] : D5;
+[1B1C..1B1F] : B1;
+[1B20..1B23] : D5;
+[1B24..1B27] : B1;
+[1B28..1B2E] : D5;
+1B2F : B1;
+[1B30..1B3F] : D5;
+
+-- Sprite 109 - Parte do Background
+[1B40..1B4E] : B1;
+[1B4F..1B52] : D5;
+[1B53..1B56] : B1;
+[1B57..1B7E] : D5;
+1B7F : B1;
+
+-- Sprite 110 - Parte do Background
+[1B80..1B8A] : B1;
+[1B8B..1B8C] : D5;
+1B8D : B1;
+[1B8E..1B92] : D5;
+1B93 : B1;
+[1B94..1BB7] : D5;
+[1BB8..1BBF] : B1;
+
+-- Sprite 111 - Parte do Background
+[1BC0..1BC6] : B1;
+[1BC7..1BC8] : D5;
+[1BC9..1BCD] : B1;
+[1BCE..1BD0] : D5;
+[1BD1..1BD4] : B1;
+[1BD5..1BD6] : D5;
+1BD7 : B1;
+[1BD8..1BF7] : D5;
+[1BF8..1BFF] : B1;
+
+-- Sprite 112 - Parte do Background
+1C00 : D5;
+[1C01..1C07] : B1;
+[1C08..1C0A] : D5;
+[1C0B..1C0F] : B1;
+[1C10..1C13] : D5;
+[1C14..1C17] : B1;
+[1C18..1C1B] : D5;
+[1C1C..1C1F] : B1;
+[1C20..1C22] : D5;
+[1C23..1C27] : B1;
+1C28 : D5;
+[1C29..1C2F] : B1;
+1C30 : D5;
+[1C31..1C3F] : B1;
+
+-- Sprite 113 - Parte do Background
+[1C40..1C44] : B1;
+[1C45..1C47] : AD;
+[1C48..1C7F] : B1;
+
+-- Sprite 114 - Parte do Background
+[1C80..1C86] : AD;
+1C87 : B1;
+[1C88..1C8F] : AD;
+1C90 : B1;
+[1C91..1C97] : AD;
+[1C98..1C99] : B1;
+[1C9A..1C9F] : AD;
+[1CA0..1CA4] : B1;
+[1CA5..1CA7] : AD;
+[1CA8..1CAD] : B1;
+[1CAE..1CAF] : AD;
+[1CB0..1CB5] : B1;
+[1CB6..1CB7] : AD;
+[1CB8..1CBF] : B1;
+
+-- Sprite 115 - Parte do Background
+[1CC0..1CC7] : B1;
+1CC8 : AD;
+1CC9 : B1;
+1CCA : AD;
+[1CCB..1CCF] : B1;
+[1CD0..1CD2] : AD;
+[1CD3..1CD7] : B1;
+[1CD8..1CF7] : AD;
+[1CF8..1CF9] : B1;
+[1CFA..1CFF] : AD;
+
+-- Sprite 116 - Parte do Background
+[1D00..1D17] : B1;
+1D18 : 89;
+[1D19..1D1E] : B1;
+[1D1F..1D20] : AD;
+[1D21..1D26] : B1;
+[1D27..1D3F] : AD;
+
+-- Sprite 117 - Parte do Background
+[1D40..1D42] : B1;
+[1D43..1D47] : AD;
+[1D48..1D4A] : B1;
+[1D4B..1D4F] : AD;
+[1D50..1D52] : B1;
+[1D53..1D7D] : AD;
+[1D7E..1D7F] : B1;
+
+-- Sprite 118 - Parte do Background
+[1D80..1DA2] : AD;
+[1DA3..1DA7] : B1;
+[1DA8..1DA9] : AD;
+[1DAA..1DAF] : B1;
+1DB0 : AD;
+[1DB1..1DBF] : B1;
+
+-- Sprite 119 - Parte do Background
+[1DC0..1DDF] : AD;
+[1DE0..1DE1] : B1;
+[1DE2..1DE7] : AD;
+[1DE8..1DE9] : B1;
+[1DEA..1DEF] : AD;
+[1DF0..1DF2] : B1;
+[1DF3..1DF7] : AD;
+[1DF8..1DFB] : B1;
+[1DFC..1DFF] : AD;
+
+-- Sprite 120 - Parte do Background
+[1E00..1E24] : AD;
+[1E25..1E27] : B1;
+[1E28..1E2C] : AD;
+[1E2D..1E2F] : B1;
+[1E30..1E31] : AD;
+[1E32..1E37] : B1;
+1E38 : AD;
+[1E39..1E3F] : B1;
+
+-- Sprite 121 - Parte do Background
+[1E40..1E54] : AD;
+[1E55..1E57] : B1;
+[1E58..1E5C] : AD;
+[1E5D..1E7F] : B1;
+
+-- Sprite 122 - Parte do Background
+[1E80..1E8B] : AD;
+[1E8C..1EBF] : B1;
+
+-- Sprite 123 - Parte do Background
+[1EC0..1ECC] : B1;
+[1ECD..1ECF] : D5;
+[1ED0..1ED4] : B1;
+[1ED5..1ED7] : D5;
+[1ED8..1EDA] : B1;
+[1EDB..1EDC] : D5;
+1EDD : B1;
+[1EDE..1EDF] : D5;
+[1EE0..1EE2] : B1;
+[1EE3..1EE7] : D5;
+1EE8 : B1;
+[1EE9..1EED] : D5;
+[1EEE..1EF0] : B1;
+[1EF1..1EF5] : D5;
+[1EF6..1EF9] : B1;
+[1EFA..1EFF] : D5;
+
+-- Sprite 124 - Parte do Background
+[1F00..1F03] : B1;
+[1F04..1F3F] : D5;
+
+-- Sprite 125 - Parte do Background
+[1F40..1F45] : B1;
+[1F46..1F48] : D5;
+[1F49..1F4C] : B1;
+[1F4D..1F50] : D5;
+[1F51..1F54] : B1;
+[1F55..1F7F] : D5;
+
+-- Sprite 126 - Parte do Background
+1F80 : B1;
+[1F81..1F87] : D5;
+[1F88..1F89] : B1;
+[1F8A..1F90] : D5;
+1F91 : B1;
+[1F92..1F99] : D5;
+1F9A : B1;
+[1F9B..1FA2] : D5;
+1FA3 : B1;
+1FA4 : D5;
+1FA5 : B1;
+[1FA6..1FAB] : D5;
+[1FAC..1FAD] : B1;
+[1FAE..1FB3] : D5;
+[1FB4..1FB5] : B1;
+[1FB6..1FBD] : D5;
+1FBE : B1;
+1FBF : D5;
+
+-- Sprite 127 - Parte do Background
+[1FC0..1FC2] : D5;
+1FC3 : B1;
+[1FC4..1FCB] : D5;
+1FCC : B1;
+[1FCD..1FD0] : D5;
+1FD1 : B1;
+[1FD2..1FFF] : D5;
+
+-- Sprite 128 - Parte do Background
+[2000..2001] : D5;
+[2002..2006] : B1;
+[2007..200A] : D5;
+[200B..200F] : B1;
+[2010..2012] : D5;
+[2013..2017] : B1;
+[2018..201A] : D5;
+[201B..201F] : B1;
+[2020..2023] : D5;
+[2024..2027] : B1;
+[2028..202C] : D5;
+[202D..202F] : B1;
+[2030..2034] : D5;
+[2035..2037] : B1;
+[2038..203C] : D5;
+[203D..203F] : B1;
+
+-- Sprite 129 - Parte do Background
+[2040..2047] : D5;
+2048 : B1;
+[2049..204F] : D5;
+2050 : B1;
+[2051..2057] : D5;
+[2058..205E] : B1;
+205F : D5;
+[2060..2066] : B1;
+2067 : D5;
+[2068..207F] : B1;
+
+-- Sprite 130 - Parte do Background
+[2080..20A7] : D5;
+[20A8..20AC] : B1;
+[20AD..20AF] : D5;
+[20B0..20B4] : B1;
+[20B5..20B7] : D5;
+[20B8..20BF] : B1;
+
+-- Sprite 131 - Parte do Background
+[20C0..20C1] : D5;
+[20C2..20C7] : B1;
+20C8 : D5;
+[20C9..20CF] : B1;
+[20D0..20D2] : D5;
+[20D3..20D7] : B1;
+20D8 : D5;
+20D9 : B1;
+20DA : D5;
+[20DB..20DF] : B1;
+20E0 : D5;
+20E1 : B1;
+[20E2..20E3] : D5;
+[20E4..20E7] : B1;
+20E8 : D5;
+[20E9..20EF] : B1;
+[20F0..20F1] : D5;
+[20F2..20FF] : B1;
+
+-- Sprite 132 - Parte do Background
+[2100..2123] : D5;
+[2124..2127] : B1;
+[2128..212B] : D5;
+[212C..212F] : B1;
+[2130..2131] : D5;
+[2132..2137] : B1;
+[2138..2139] : D5;
+[213A..213F] : B1;
+
+-- Sprite 133 - Parte do Background
+[2140..214F] : D5;
+[2150..2151] : B1;
+[2152..2153] : D5;
+2154 : B1;
+2155 : D5;
+[2156..217F] : B1;
+
+-- Sprite 134 - Parte do Background
+[2180..21B6] : B1;
+21B7 : D5;
+[21B8..21BE] : B1;
+21BF : D5;
+
+-- Sprite 135 - Parte do Background
+[21C0..21DE] : B1;
+21DF : D5;
+[21E0..21E5] : B1;
+21E6 : D5;
+[21E7..21E8] : B1;
+[21E9..21FF] : D5;
+
+-- Sprite 136 - Parte do Background
+[2200..2207] : B1;
+[2208..2209] : D5;
+220A : B1;
+220B : D5;
+[220C..220F] : B1;
+[2210..2213] : D5;
+[2214..2217] : B1;
+[2218..221D] : D5;
+[221E..221F] : B1;
+[2220..2225] : D5;
+[2226..2227] : B1;
+[2228..223F] : D5;
+
+-- Sprite 137 - Parte do Background
+[2240..2267] : B1;
+2268 : D5;
+[2269..226F] : B1;
+[2270..227F] : D5;
+
+-- Sprite 138 - Parte do Background
+[2280..2286] : B1;
+2287 : AD;
+[2288..22AF] : B1;
+22B0 : D5;
+[22B1..22B7] : B1;
+22B8 : D5;
+[22B9..22BF] : B1;
+
+-- Sprite 139 - Parte do Background
+[22C0..22C3] : AD;
+[22C4..22C7] : B1;
+[22C8..22CB] : AD;
+[22CC..22FF] : B1;
+
+-- Sprite 140 - Parte do Background
+[2300..2333] : B1;
+[2334..2337] : D5;
+[2338..233B] : B1;
+[233C..233F] : D5;
+
+-- Sprite 141 - Parte do Background
+[2340..2366] : B1;
+[2367..237F] : D5;
+
+-- Sprite 142 - Parte do Background
+[2380..238C] : B1;
+[238D..238F] : D5;
+[2390..2394] : B1;
+[2395..23BA] : D5;
+23BB : B1;
+[23BC..23BF] : D5;
+
+-- Sprite 143 - Parte do Background
+[23C0..23C7] : B1;
+[23C8..23CA] : D5;
+[23CB..23CE] : B1;
+[23CF..23D2] : D5;
+[23D3..23D6] : B1;
+[23D7..23FF] : D5;
+
+-- Sprite 144 - Parte do Background
+2400 : B1;
+[2401..2408] : D5;
+2409 : B1;
+[240A..240F] : D5;
+2410 : B1;
+[2411..243B] : D5;
+243C : B1;
+243D : D5;
+243E : B1;
+243F : D5;
+
+-- Sprite 145 - Parte do Background
+[2440..245E] : D5;
+245F : B1;
+[2460..246F] : D5;
+[2470..2473] : B1;
+[2474..2477] : D5;
+[2478..247B] : B1;
+[247C..247F] : D5;
+
+-- Sprite 146 - Parte do Background
+[2480..24A8] : D5;
+24A9 : B1;
+[24AA..24B1] : D5;
+[24B2..24B3] : B1;
+[24B4..24BF] : D5;
+
+-- Sprite 147 - Parte do Background
+[24C0..24C5] : D5;
+24C6 : B1;
+[24C7..24CD] : D5;
+24CE : B1;
+[24CF..24FF] : D5;
+
+-- Sprite 148 - Parte do Background
+[2500..2517] : D5;
+[2518..2519] : B1;
+[251A..2520] : D5;
+2521 : B1;
+[2522..2529] : D5;
+252A : B1;
+[252B..2536] : D5;
+2537 : B1;
+[2538..253E] : D5;
+253F : B1;
+
+-- Sprite 149 - Parte do Background
+[2540..256F] : D5;
+[2570..257F] : B1;
+
+-- Sprite 150 - Parte do Background
+[2580..25AF] : D5;
+[25B0..25B4] : B1;
+[25B5..25B7] : D5;
+[25B8..25BD] : B1;
+[25BE..25BF] : D5;
+
+-- Sprite 151 - Parte do Background
+[25C0..25DD] : D5;
+[25DE..25DF] : B1;
+[25E0..25E5] : D5;
+25E6 : B1;
+[25E7..25ED] : D5;
+[25EE..25EF] : B1;
+[25F0..25F3] : D5;
+[25F4..25F7] : B1;
+[25F8..25FB] : D5;
+[25FC..25FF] : B1;
+
+-- Sprite 152 - Parte do Background
+[2600..260F] : D5;
+[2610..2611] : B1;
+[2612..2617] : D5;
+[2618..2619] : B1;
+[261A..261F] : D5;
+[2620..2621] : B1;
+[2622..2623] : D5;
+[2624..2625] : B1;
+[2626..2627] : D5;
+[2628..262D] : B1;
+[262E..262F] : D5;
+[2630..263F] : B1;
+
+-- Sprite 153 - Parte do Background
+[2640..2644] : D5;
+[2645..2647] : B1;
+[2648..264C] : D5;
+[264D..264F] : B1;
+[2650..2654] : D5;
+[2655..2657] : B1;
+[2658..265A] : D5;
+[265B..265F] : B1;
+[2660..2662] : D5;
+[2663..2667] : B1;
+[2668..2669] : D5;
+[266A..267F] : B1;
+
+-- Sprite 154 - Parte do Background
+[2680..26B2] : B1;
+[26B3..26B7] : D5;
+[26B8..26B9] : B1;
+[26BA..26BF] : D5;
+
+-- Sprite 155 - Parte do Background
+[26C0..26DE] : B1;
+26DF : D5;
+[26E0..26E9] : B1;
+[26EA..26FF] : D5;
+
+-- Sprite 156 - Parte do Background
+[2700..2708] : B1;
+[2709..270E] : D5;
+[270F..2710] : B1;
+[2711..273F] : D5;
+
+-- Sprite 157 - Parte do Background
+[2740..2748] : B1;
+[2749..274C] : D5;
+[274D..274F] : B1;
+[2750..2753] : D5;
+[2754..2757] : B1;
+[2758..277F] : D5;
+
+-- Sprite 158 - Parte do Background
+[2780..2797] : B1;
+2798 : D5;
+[2799..279F] : B1;
+27A0 : D5;
+[27A1..27A7] : B1;
+[27A8..27AA] : D5;
+27AB : B1;
+[27AC..27B1] : D5;
+27B2 : B1;
+[27B3..27B9] : D5;
+27BA : B1;
+[27BB..27BF] : D5;
+
+-- Sprite 159 - Parte do Background
+[27C0..27C4] : B1;
+[27C5..27C7] : D5;
+[27C8..27CB] : B1;
+[27CC..27CF] : D5;
+[27D0..27D2] : B1;
+[27D3..27D7] : D5;
+[27D8..27D9] : B1;
+[27DA..27DF] : D5;
+27E0 : B1;
+[27E1..27FF] : D5;
+
+-- Sprite 160 - Parte do Background
+[2800..2801] : D5;
+[2802..2807] : B1;
+[2808..2809] : D5;
+[280A..280F] : B1;
+[2810..2811] : D5;
+[2812..2817] : B1;
+[2818..281B] : D5;
+[281C..281F] : B1;
+[2820..2824] : D5;
+2825 : B1;
+2826 : D5;
+2827 : B1;
+[2828..283F] : D5;
+
+-- Sprite 161 - Parte do Background
+[2840..285F] : B1;
+[2860..2861] : D5;
+[2862..2867] : B1;
+[2868..2869] : D5;
+[286A..286F] : B1;
+[2870..2872] : D5;
+2873 : B1;
+[2874..287F] : D5;
+
+-- Sprite 162 - Parte do Background
+[2880..28A1] : B1;
+28A2 : D5;
+[28A3..28A8] : B1;
+[28A9..28AA] : D5;
+[28AB..28AF] : B1;
+[28B0..28B3] : D5;
+[28B4..28B7] : B1;
+[28B8..28BF] : D5;
+
+-- Sprite 163 - Parte do Background
+[28C0..28F7] : B1;
+[28F8..28FB] : D5;
+[28FC..28FF] : B1;
+
+-- Sprite 164 - Parte do Background
+[2900..2907] : D5;
+2908 : B1;
+[2909..290F] : D5;
+[2910..2916] : B1;
+2917 : D5;
+[2918..291D] : B1;
+[291E..291F] : D5;
+[2920..2933] : B1;
+[2934..2937] : 08;
+[2938..293B] : B1;
+[293C..293F] : 08;
+
+-- Sprite 165 - Parte do Background
+[2940..295B] : D5;
+295C : B1;
+[295D..295E] : D5;
+[295F..2963] : B1;
+[2964..2967] : D5;
+[2968..296C] : B1;
+296D : D5;
+296E : B1;
+296F : D5;
+[2970..2975] : 08;
+[2976..2977] : B1;
+[2978..297D] : 08;
+[297E..297F] : B1;
+
+-- Sprite 166 - Parte do Background
+[2980..29AA] : D5;
+29AB : B1;
+[29AC..29AF] : D5;
+[29B0..29B3] : B1;
+[29B4..29B7] : D5;
+[29B8..29BD] : B1;
+[29BE..29BF] : D5;
+
+-- Sprite 167 - Parte do Background
+[29C0..29C4] : D5;
+[29C5..29C7] : B1;
+29C8 : D5;
+29C9 : B1;
+[29CA..29CB] : D5;
+[29CC..29CF] : B1;
+[29D0..29D3] : D5;
+[29D4..29D5] : B1;
+[29D6..29FF] : D5;
+
+-- Sprite 168 - Parte do Background
+[2A00..2A10] : B1;
+2A11 : D5;
+[2A12..2A17] : B1;
+[2A18..2A1A] : D5;
+[2A1B..2A1F] : B1;
+[2A20..2A24] : D5;
+[2A25..2A27] : B1;
+[2A28..2A3F] : D5;
+
+-- Sprite 169 - Parte do Background
+[2A40..2A67] : B1;
+[2A68..2A7D] : D5;
+[2A7E..2A7F] : B1;
+
+-- Sprite 170 - Parte do Background
+[2A80..2AB9] : B1;
+[2ABA..2ABB] : D5;
+[2ABC..2ABF] : B1;
+
+-- Sprite 171 - Parte do Background
+[2AC0..2ACF] : D5;
+[2AD0..2AD6] : B1;
+2AD7 : D5;
+[2AD8..2AFF] : B1;
+
+-- Sprite 172 - Parte do Background
+[2B00..2B12] : D5;
+[2B13..2B16] : B1;
+2B17 : D5;
+[2B18..2B3F] : B1;
+
+-- Sprite 173 - Parte do Background
+[2B40..2B5D] : D5;
+2B5E : B1;
+2B5F : D5;
+2B60 : B1;
+[2B61..2B64] : D5;
+[2B65..2B69] : B1;
+[2B6A..2B6C] : D5;
+[2B6D..2B7F] : B1;
+
+-- Sprite 174 - Parte do Background
+[2B80..2B85] : D5;
+[2B86..2B87] : B1;
+[2B88..2B8D] : D5;
+[2B8E..2B8F] : B1;
+[2B90..2B94] : D5;
+[2B95..2B97] : B1;
+[2B98..2B9B] : D5;
+[2B9C..2BBF] : B1;
+
+-- Sprite 175 - Parte do Background
+[2BC0..2BC5] : B1;
+[2BC6..2BC7] : D5;
+[2BC8..2BCD] : B1;
+2BCE : D5;
+[2BCF..2BFF] : B1;
+
+-- Sprite 176 - Parte do Background
+[2C00..2C04] : D5;
+2C05 : B1;
+[2C06..2C0D] : D5;
+2C0E : B1;
+[2C0F..2C17] : D5;
+2C18 : B1;
+[2C19..2C1F] : D5;
+[2C20..2C3F] : B1;
+
+-- Sprite 177 - Parte do Background
+[2C40..2C4F] : D5;
+2C50 : B1;
+[2C51..2C5F] : D5;
+[2C60..2C62] : B1;
+[2C63..2C67] : D5;
+[2C68..2C6B] : B1;
+[2C6C..2C6F] : D5;
+[2C70..2C75] : B1;
+[2C76..2C77] : D5;
+[2C78..2C7D] : B1;
+[2C7E..2C7F] : D5;
+
+-- Sprite 178 - Parte do Background
+[2C80..2C83] : D5;
+[2C84..2C87] : B1;
+[2C88..2C8B] : D5;
+[2C8C..2C8F] : B1;
+[2C90..2C91] : D5;
+[2C92..2C97] : B1;
+[2C98..2C99] : D5;
+[2C9A..2C9F] : B1;
+[2CA0..2CA1] : D5;
+[2CA2..2CA7] : B1;
+[2CA8..2CA9] : D5;
+[2CAA..2CBF] : B1;
+
+-- Sprite 179 - Parte do Background
+[2CC0..2CE2] : B1;
+[2CE3..2CE4] : D5;
+[2CE5..2CEA] : B1;
+[2CEB..2CEF] : D5;
+[2CF0..2CF1] : B1;
+[2CF2..2CF7] : D5;
+[2CF8..2CF9] : B1;
+[2CFA..2CFF] : D5;
+
+-- Sprite 180 - Parte do Background
+[2D00..2D27] : B1;
+2D28 : D5;
+[2D29..2D2F] : B1;
+[2D30..2D33] : D5;
+[2D34..2D35] : B1;
+2D36 : D5;
+2D37 : B1;
+[2D38..2D3C] : D5;
+[2D3D..2D3F] : B1;
+
+-- Sprite 181 - Parte do Background
+[2D40..2D44] : B1;
+[2D45..2D47] : D5;
+[2D48..2D4C] : B1;
+[2D4D..2D4F] : D5;
+[2D50..2D7F] : B1;
+
+-- Sprite 182 - Parte do Background
+[2D80..2D85] : D5;
+[2D86..2D87] : B1;
+[2D88..2D8D] : D5;
+[2D8E..2DBF] : B1;
+
+-- Sprite 183 - Parte do Background
+[2DC0..2DE4] : B1;
+[2DE5..2DE7] : D5;
+[2DE8..2DEC] : B1;
+[2DED..2DEF] : D5;
+[2DF0..2DF2] : B1;
+[2DF3..2DF7] : D5;
+[2DF8..2DFA] : B1;
+[2DFB..2DFF] : D5;
+
+-- Sprite 184 - Parte do Background
+[2E00..2E12] : B1;
+[2E13..2E17] : D5;
+[2E18..2E1A] : B1;
+[2E1B..2E3F] : D5;
+
+-- Sprite 185 - Parte do Background
+[2E40..2E4F] : B1;
+[2E50..2E52] : D5;
+[2E53..2E57] : B1;
+[2E58..2E5A] : D5;
+[2E5B..2E5F] : B1;
+[2E60..2E65] : D5;
+[2E66..2E67] : B1;
+[2E68..2E6D] : D5;
+[2E6E..2E6F] : B1;
+[2E70..2E75] : D5;
+[2E76..2E77] : B1;
+[2E78..2E7D] : D5;
+[2E7E..2E7F] : B1;
+
+-- Sprite 186 - Parte do Background
+[2E80..2E81] : B1;
+[2E82..2E87] : D5;
+[2E88..2E89] : B1;
+[2E8A..2E8F] : D5;
+[2E90..2EBF] : B1;
+
+-- Sprite 187 - Parte do Background
+[2EC0..2ECF] : D5;
+[2ED0..2ED1] : B1;
+[2ED2..2ED7] : D5;
+2ED8 : B1;
+[2ED9..2EDF] : D5;
+[2EE0..2EFF] : B1;
+
+-- Sprite 188 - Parte do Background
+[2F00..2F1D] : D5;
+[2F1E..2F3F] : B1;
+
+-- Sprite 189 - Parte do Background
+[2F40..2F41] : D5;
+2F42 : B1;
+[2F43..2F48] : D5;
+[2F49..2F4A] : B1;
+[2F4B..2F53] : D5;
+[2F54..2F57] : B1;
+[2F58..2F5B] : D5;
+[2F5C..2F7F] : B1;
+
+-- Sprite 190 - Parte do Background
+[2F80..2F84] : D5;
+[2F85..2F87] : B1;
+[2F88..2F8B] : D5;
+[2F8C..2FBF] : B1;
+
+-- Sprite 191 - Parte do Background
+[2FC0..2FC7] : D5;
+2FC8 : B1;
+[2FC9..2FD1] : D5;
+[2FD2..2FD5] : B1;
+[2FD6..2FD7] : D5;
+[2FD8..2FFF] : B1;
+
+-- Sprite 192 - Parte do Background
+[3000..3015] : D5;
+[3016..3017] : B1;
+[3018..301B] : D5;
+301C : B1;
+301D : D5;
+[301E..303F] : B1;
+
+-- Sprite 193 - Parte do Background
+[3040..304F] : D5;
+[3050..3051] : B1;
+[3052..3057] : D5;
+3058 : B1;
+3059 : D5;
+[305A..305B] : B1;
+[305C..305F] : D5;
+[3060..307F] : B1;
+
+-- Sprite 194 - Parte do Background
+[3080..3085] : D5;
+[3086..3087] : B1;
+[3088..309F] : D5;
+30A0 : B1;
+[30A1..30A7] : D5;
+30A8 : B1;
+30A9 : D5;
+30AA : B1;
+30AB : D5;
+30AC : B1;
+[30AD..30AF] : D5;
+[30B0..30B4] : B1;
+[30B5..30B7] : D5;
+[30B8..30BC] : B1;
+30BD : D5;
+[30BE..30BF] : B1;
+
+-- Sprite 195 - Parte do Background
+[30C0..30C2] : D5;
+[30C3..30C7] : B1;
+[30C8..30CA] : D5;
+[30CB..30CF] : B1;
+[30D0..30D4] : D5;
+30D5 : B1;
+30D6 : 48;
+30D7 : 08;
+[30D8..30DB] : D5;
+[30DC..30DD] : B1;
+30DE : 48;
+30DF : 08;
+[30E0..30E1] : D5;
+30E2 : B1;
+[30E3..30E4] : D5;
+30E5 : 08;
+30E6 : 44;
+30E7 : 84;
+[30E8..30EA] : D5;
+[30EB..30EC] : 91;
+30ED : 08;
+30EE : 44;
+30EF : 89;
+[30F0..30F2] : B1;
+[30F3..30F4] : 08;
+[30F5..30F6] : B1;
+30F7 : AD;
+[30F8..30F9] : D5;
+30FA : B1;
+[30FB..30FC] : 08;
+[30FD..30FE] : B1;
+30FF : 89;
+
+-- Sprite 196 - Parte do Background
+3100 : 49;
+[3101..3103] : 08;
+3104 : B1;
+3105 : DA;
+3106 : B1;
+[3107..3108] : 89;
+[3109..310B] : 08;
+310C : B1;
+310D : D5;
+310E : 89;
+310F : AD;
+3110 : 44;
+3111 : 84;
+3112 : D5;
+[3113..3114] : DA;
+3115 : D5;
+3116 : 91;
+3117 : AD;
+3118 : 44;
+3119 : 89;
+311A : D5;
+311B : DA;
+[311C..311D] : D5;
+[311E..3120] : 89;
+3121 : AD;
+[3122..3125] : DA;
+3126 : B1;
+3127 : AD;
+3128 : 89;
+3129 : AD;
+[312A..312D] : DA;
+312E : B1;
+312F : AD;
+3130 : 89;
+3131 : AD;
+[3132..3135] : DA;
+3136 : B1;
+[3137..3139] : AD;
+[313A..313D] : DA;
+313E : 91;
+313F : AD;
+
+-- Sprite 197 - Parte do Background
+[3140..3143] : 89;
+[3144..3145] : B1;
+[3146..3147] : 08;
+3148 : AD;
+3149 : 89;
+314A : AD;
+314B : 89;
+[314C..314D] : B1;
+[314E..314F] : 08;
+3150 : 89;
+[3151..3152] : AD;
+3153 : 89;
+3154 : D5;
+[3155..3157] : DA;
+3158 : 89;
+[3159..315A] : AD;
+315B : 89;
+[315C..315F] : DA;
+[3160..3161] : AD;
+[3162..3163] : 89;
+3164 : DA;
+[3165..3166] : D5;
+3167 : DA;
+[3168..3169] : AD;
+[316A..316B] : 89;
+316C : DA;
+[316D..316E] : D5;
+316F : DA;
+[3170..3173] : AD;
+3174 : DA;
+[3175..3176] : D5;
+3177 : DA;
+[3178..317B] : AD;
+[317C..317F] : DA;
+
+-- Sprite 198 - Parte do Background
+[3180..3181] : 08;
+[3182..3187] : B1;
+[3188..3189] : 08;
+[318A..318F] : B1;
+[3190..3191] : 89;
+3192 : 08;
+3193 : 44;
+[3194..3197] : B1;
+[3198..3199] : 89;
+319A : 08;
+319B : 44;
+[319C..319F] : B1;
+31A0 : 89;
+31A1 : AD;
+31A2 : 89;
+31A3 : 64;
+[31A4..31A5] : 08;
+[31A6..31A7] : B1;
+[31A8..31A9] : AD;
+31AA : 89;
+31AB : 84;
+31AC : 08;
+31AD : 44;
+31AE : 89;
+31AF : B1;
+31B0 : AD;
+31B1 : 89;
+31B2 : AD;
+31B3 : 89;
+31B4 : B1;
+31B5 : 91;
+31B6 : 08;
+31B7 : 89;
+31B8 : AD;
+[31B9..31BB] : 89;
+31BC : B1;
+31BD : 91;
+31BE : 08;
+31BF : 89;
+
+-- Sprite 199 - Parte do Background
+31C0 : B1;
+[31C1..31C7] : D5;
+[31C8..31C9] : B1;
+[31CA..31CF] : D5;
+[31D0..31FF] : B1;
+
+-- Sprite 200 - Parte do Background
+[3200..320F] : D5;
+[3210..323F] : B1;
+
+-- Sprite 201 - Parte do Background
+[3240..3242] : D5;
+[3243..3247] : B1;
+[3248..324A] : D5;
+[324B..3272] : B1;
+[3273..3277] : D5;
+[3278..327A] : B1;
+[327B..327F] : D5;
+
+-- Sprite 202 - Parte do Background
+[3280..32AE] : B1;
+32AF : D5;
+[32B0..32B4] : B1;
+[32B5..32B7] : D5;
+[32B8..32BD] : B1;
+[32BE..32BF] : D5;
+
+-- Sprite 203 - Parte do Background
+[32C0..32DF] : B1;
+32E0 : D5;
+[32E1..32E2] : B1;
+[32E3..32E4] : D5;
+[32E5..32E7] : B1;
+[32E8..32EC] : D5;
+[32ED..32EF] : B1;
+[32F0..32FF] : D5;
+
+-- Sprite 204 - Parte do Background
+[3300..3324] : B1;
+[3325..3327] : D5;
+[3328..332C] : B1;
+[332D..333F] : D5;
+
+-- Sprite 205 - Parte do Background
+[3340..3355] : B1;
+[3356..3357] : D5;
+[3358..335D] : B1;
+[335E..337F] : D5;
+
+-- Sprite 206 - Parte do Background
+[3380..338F] : B1;
+[3390..3392] : D5;
+[3393..3397] : B1;
+[3398..339C] : D5;
+[339D..339F] : B1;
+[33A0..33A5] : D5;
+[33A6..33A7] : B1;
+[33A8..33AD] : D5;
+[33AE..33AF] : B1;
+[33B0..33B5] : D5;
+[33B6..33B7] : B1;
+[33B8..33BD] : D5;
+[33BE..33BF] : B1;
+
+-- Sprite 207 - Parte do Background
+33C0 : B1;
+[33C1..33C7] : D5;
+33C8 : B1;
+[33C9..33CF] : D5;
+[33D0..33D2] : B1;
+[33D3..33D6] : D5;
+[33D7..33DA] : B1;
+[33DB..33DE] : D5;
+[33DF..33FE] : B1;
+33FF : D5;
+
+-- Sprite 208 - Parte do Background
+[3400..340F] : D5;
+[3410..3412] : B1;
+[3413..3417] : D5;
+[3418..341A] : B1;
+[341B..341F] : D5;
+[3420..3424] : B1;
+[3425..3427] : D5;
+[3428..342C] : B1;
+[342D..342F] : D5;
+[3430..3434] : B1;
+[3435..3437] : D5;
+[3438..343C] : B1;
+[343D..343F] : D5;
+
+-- Sprite 209 - Parte do Background
+[3440..3455] : D5;
+[3456..3457] : B1;
+[3458..345D] : D5;
+[345E..345F] : B1;
+[3460..3465] : D5;
+[3466..3467] : B1;
+[3468..346D] : D5;
+[346E..346F] : B1;
+[3470..3473] : D5;
+[3474..3477] : B1;
+[3478..347B] : D5;
+[347C..347F] : B1;
+
+-- Sprite 210 - Parte do Background
+[3480..3486] : B1;
+3487 : D5;
+[3488..348E] : B1;
+348F : D5;
+[3490..3494] : B1;
+[3495..3497] : D5;
+[3498..349C] : B1;
+[349D..349F] : D5;
+[34A0..34A4] : B1;
+[34A5..34A7] : D5;
+[34A8..34AC] : B1;
+[34AD..34AF] : D5;
+[34B0..34B4] : B1;
+[34B5..34B7] : D5;
+[34B8..34BC] : B1;
+[34BD..34BF] : D5;
+
+-- Sprite 211 - Parte do Background
+[34C0..34C1] : D5;
+[34C2..34C3] : B1;
+[34C4..34C9] : D5;
+[34CA..34CB] : B1;
+[34CC..34D2] : D5;
+34D3 : B1;
+[34D4..34DA] : D5;
+[34DB..34DC] : B1;
+[34DD..34E4] : D5;
+34E5 : B1;
+34E6 : D5;
+34E7 : B1;
+[34E8..34EC] : D5;
+34ED : B1;
+[34EE..34F4] : D5;
+34F5 : B1;
+[34F6..34FF] : D5;
+
+-- Sprite 212 - Parte do Background
+[3500..3505] : D5;
+[3506..3507] : B1;
+[3508..350D] : D5;
+[350E..350F] : B1;
+[3510..353F] : D5;
+
+-- Sprite 213 - Parte do Background
+[3540..354F] : B1;
+[3550..355D] : D5;
+355E : B1;
+[355F..3576] : D5;
+3577 : B1;
+[3578..357F] : D5;
+
+-- Sprite 214 - Parte do Background
+[3580..3581] : B1;
+[3582..3587] : D5;
+[3588..3589] : B1;
+[358A..35AF] : D5;
+35B0 : B1;
+[35B1..35BF] : D5;
+
+-- Sprite 215 - Parte do Background
+[35C0..35C5] : D5;
+[35C6..35C7] : B1;
+[35C8..35CD] : D5;
+[35CE..35CF] : B1;
+[35D0..35DE] : D5;
+35DF : B1;
+[35E0..35ED] : D5;
+35EE : B1;
+[35EF..35F4] : D5;
+35F5 : B1;
+[35F6..35FC] : D5;
+35FD : B1;
+[35FE..35FF] : D5;
+
+-- Sprite 216 - Parte do Background
+[3600..361F] : B1;
+[3620..3625] : D5;
+[3626..3627] : B1;
+[3628..362D] : D5;
+[362E..362F] : B1;
+[3630..363E] : D5;
+363F : B1;
+
+-- Sprite 217 - Parte do Background
+[3640..3668] : B1;
+3669 : D5;
+[366A..366F] : B1;
+[3670..367F] : D5;
+
+-- Sprite 218 - Parte do Background
+[3680..36AF] : B1;
+36B0 : D5;
+[36B1..36B3] : B1;
+[36B4..36BF] : D5;
+
+-- Sprite 219 - Parte do Background
+[36C0..36EF] : B1;
+36F0 : D5;
+[36F1..36F7] : B1;
+[36F8..36FA] : D5;
+[36FB..36FF] : B1;
+
+-- Sprite 220 - Parte do Background
+[3700..3701] : D5;
+3702 : B1;
+[3703..3704] : 08;
+3705 : D5;
+3706 : B1;
+3707 : AD;
+3708 : B1;
+[3709..370A] : 89;
+370B : 64;
+370C : 44;
+370D : D5;
+370E : B1;
+370F : AD;
+3710 : 91;
+[3711..3712] : 08;
+[3713..3714] : 89;
+3715 : D5;
+3716 : B1;
+3717 : AD;
+3718 : B1;
+[3719..371A] : 08;
+[371B..371C] : 89;
+371D : D5;
+371E : B1;
+371F : AD;
+3720 : B1;
+[3721..3722] : 08;
+[3723..3724] : 89;
+3725 : D5;
+3726 : B1;
+3727 : AD;
+3728 : B1;
+[3729..372A] : 08;
+[372B..372C] : 89;
+372D : D5;
+372E : B1;
+372F : AD;
+3730 : 91;
+[3731..3732] : 08;
+[3733..3734] : 89;
+3735 : D5;
+3736 : B1;
+3737 : 89;
+3738 : 91;
+[3739..373A] : 08;
+[373B..373C] : 89;
+373D : D5;
+373E : B1;
+373F : AD;
+
+-- Sprite 221 - Parte do Background
+[3740..3741] : AD;
+[3742..3745] : DA;
+3746 : 91;
+[3747..3749] : AD;
+[374A..374D] : DA;
+374E : 91;
+[374F..3751] : AD;
+[3752..3755] : DA;
+3756 : 91;
+[3757..3759] : AD;
+[375A..375D] : DA;
+375E : 91;
+[375F..3761] : AD;
+[3762..3765] : DA;
+3766 : 91;
+[3767..3769] : AD;
+[376A..376D] : DA;
+376E : 91;
+[376F..3771] : AD;
+[3772..3775] : DA;
+3776 : 91;
+[3777..3779] : AD;
+[377A..377D] : DA;
+377E : B1;
+377F : AD;
+
+-- Sprite 222 - Parte do Background
+[3780..3783] : AD;
+[3784..3787] : DA;
+[3788..378B] : AD;
+[378C..378F] : DA;
+[3790..3793] : AD;
+[3794..3797] : DA;
+[3798..379B] : AD;
+[379C..379F] : DA;
+[37A0..37A3] : AD;
+[37A4..37A7] : DA;
+[37A8..37AB] : AD;
+[37AC..37AF] : DA;
+[37B0..37B3] : AD;
+37B4 : DA;
+[37B5..37B6] : D5;
+37B7 : DA;
+[37B8..37B9] : AD;
+[37BA..37BB] : 89;
+37BC : DA;
+[37BD..37BE] : D5;
+37BF : DA;
+
+-- Sprite 223 - Parte do Background
+[37C0..37C1] : AD;
+[37C2..37C3] : 89;
+[37C4..37C5] : D5;
+37C6 : 08;
+37C7 : 89;
+37C8 : AD;
+[37C9..37CB] : 89;
+37CC : DA;
+37CD : D5;
+37CE : 64;
+37CF : 89;
+37D0 : AD;
+[37D1..37D3] : 89;
+37D4 : D5;
+37D5 : DA;
+37D6 : 89;
+37D7 : 08;
+37D8 : AD;
+[37D9..37DB] : 89;
+37DC : DA;
+37DD : D5;
+37DE : 89;
+37DF : 08;
+37E0 : AD;
+[37E1..37E3] : 89;
+37E4 : DA;
+37E5 : D5;
+37E6 : 89;
+37E7 : 08;
+37E8 : AD;
+[37E9..37EB] : 89;
+37EC : DA;
+37ED : D5;
+37EE : 89;
+37EF : 08;
+37F0 : AD;
+[37F1..37F3] : 89;
+37F4 : DA;
+37F5 : D5;
+37F6 : 89;
+37F7 : 08;
+37F8 : AD;
+37F9 : 89;
+[37FA..37FB] : AD;
+[37FC..37FD] : D5;
+37FE : 89;
+37FF : 08;
+
+-- Sprite 224 - Parte do Background
+[3800..3807] : B1;
+3808 : 44;
+3809 : 89;
+380A : B1;
+[380B..380E] : D5;
+380F : B1;
+3810 : 08;
+3811 : 89;
+3812 : B1;
+[3813..3816] : D5;
+3817 : B1;
+3818 : 08;
+3819 : 89;
+[381A..381E] : D5;
+381F : B1;
+3820 : 08;
+3821 : 89;
+[3822..3827] : D5;
+3828 : 08;
+3829 : 89;
+[382A..382F] : D5;
+3830 : 08;
+3831 : 89;
+[3832..3837] : D5;
+3838 : 08;
+3839 : 89;
+[383A..383F] : D5;
+
+-- Sprite 225 - Parte do Background
+[3840..384E] : B1;
+384F : D5;
+[3850..3856] : B1;
+[3857..3865] : D5;
+3866 : B1;
+[3867..387F] : D5;
+
+-- Sprite 226 - Parte do Background
+3880 : B1;
+[3881..3887] : D5;
+3888 : B1;
+[3889..388F] : D5;
+3890 : B1;
+[3891..38BF] : D5;
+
+-- Sprite 227 - Parte do Background
+[38C0..38C1] : D5;
+[38C2..38C7] : B1;
+[38C8..38CB] : D5;
+[38CC..38CF] : B1;
+[38D0..38D3] : D5;
+[38D4..38D7] : B1;
+[38D8..38FF] : D5;
+
+-- Sprite 228 - Parte do Background
+[3900..390A] : B1;
+[390B..390F] : D5;
+[3910..3912] : B1;
+[3913..3917] : D5;
+[3918..3919] : B1;
+[391A..393F] : D5;
+
+-- Sprite 229 - Parte do Background
+[3940..3944] : D5;
+[3945..3947] : B1;
+[3948..394C] : D5;
+[394D..394F] : B1;
+[3950..3954] : D5;
+[3955..3957] : B1;
+[3958..395E] : D5;
+395F : B1;
+[3960..3966] : D5;
+3967 : B1;
+[3968..396E] : D5;
+396F : B1;
+[3970..397F] : D5;
+
+-- Sprite 230 - Parte do Background
+[3980..39A7] : B1;
+[39A8..39A9] : D5;
+[39AA..39AF] : B1;
+[39B0..39B2] : D5;
+[39B3..39B7] : B1;
+39B8 : D5;
+[39B9..39BF] : B1;
+
+-- Sprite 231 - Parte do Background
+[39C0..39C4] : B1;
+[39C5..39C7] : D5;
+[39C8..39FF] : B1;
+
+-- Sprite 232 - Parte do Background
+[3A00..3A07] : D5;
+[3A08..3A3F] : B1;
+
+-- Sprite 233 - Parte do Background
+[3A40..3A46] : B1;
+3A47 : D5;
+[3A48..3A4E] : B1;
+3A4F : D5;
+[3A50..3A56] : B1;
+3A57 : D5;
+[3A58..3A5D] : B1;
+[3A5E..3A5F] : D5;
+[3A60..3A64] : B1;
+[3A65..3A67] : D5;
+[3A68..3A69] : B1;
+[3A6A..3A6F] : D5;
+3A70 : B1;
+[3A71..3A77] : D5;
+[3A78..3A79] : B1;
+[3A7A..3A7F] : D5;
+
+-- Sprite 234 - Parte do Background
+[3A80..3A88] : D5;
+3A89 : B1;
+[3A8A..3A90] : D5;
+[3A91..3A92] : B1;
+[3A93..3A9A] : D5;
+3A9B : B1;
+[3A9C..3AA2] : D5;
+3AA3 : B1;
+[3AA4..3AAA] : D5;
+3AAB : B1;
+[3AAC..3AB2] : D5;
+3AB3 : B1;
+[3AB4..3ABF] : D5;
+
+-- Sprite 235 - Parte do Background
+[3AC0..3AF7] : D5;
+3AF8 : B1;
+[3AF9..3AFF] : D5;
+
+-- Sprite 236 - Parte do Background
+[3B00..3B04] : D5;
+3B05 : B1;
+[3B06..3B0C] : D5;
+3B0D : B1;
+[3B0E..3B14] : D5;
+3B15 : B1;
+[3B16..3B1C] : D5;
+3B1D : B1;
+[3B1E..3B24] : D5;
+3B25 : B1;
+[3B26..3B2C] : D5;
+3B2D : B1;
+[3B2E..3B34] : D5;
+3B35 : B1;
+[3B36..3B3F] : D5;
+
+-- Sprite 237 - Parte do Background
+[3B40..3B47] : B1;
+[3B48..3B4A] : D5;
+[3B4B..3B4F] : B1;
+[3B50..3B53] : D5;
+[3B54..3B57] : B1;
+[3B58..3B7F] : D5;
+
+-- Sprite 238 - Parte do Background
+[3B80..3B98] : B1;
+[3B99..3B9A] : D5;
+[3B9B..3B9C] : B1;
+[3B9D..3BA1] : D5;
+3BA2 : B1;
+[3BA3..3BA9] : D5;
+3BAA : B1;
+[3BAB..3BBF] : D5;
+
+-- Sprite 239 - Parte do Background
+[3BC0..3BD7] : B1;
+3BD8 : D5;
+[3BD9..3BDF] : B1;
+3BE0 : D5;
+[3BE1..3BE7] : B1;
+[3BE8..3BEA] : D5;
+[3BEB..3BEF] : B1;
+[3BF0..3BF2] : D5;
+[3BF3..3BF7] : B1;
+[3BF8..3BFC] : D5;
+[3BFD..3BFF] : B1;
+
+-- Sprite 240 - Parte do Background
+[3C00..3C02] : D5;
+[3C03..3C07] : B1;
+[3C08..3C0C] : D5;
+[3C0D..3C0F] : B1;
+[3C10..3C14] : D5;
+[3C15..3C17] : B1;
+[3C18..3C3F] : D5;
+
+-- Sprite 241 - Parte do Background
+3C40 : 91;
+[3C41..3C42] : 08;
+[3C43..3C44] : 89;
+3C45 : D5;
+3C46 : B1;
+3C47 : 89;
+3C48 : 91;
+[3C49..3C4A] : 08;
+[3C4B..3C4C] : 89;
+[3C4D..3C4E] : B1;
+3C4F : 89;
+3C50 : 91;
+[3C51..3C52] : 08;
+[3C53..3C54] : 89;
+3C55 : D5;
+3C56 : B1;
+3C57 : 89;
+[3C58..3C59] : B1;
+3C5A : 91;
+[3C5B..3C5C] : 08;
+3C5D : D5;
+3C5E : B1;
+3C5F : 89;
+3C60 : D5;
+3C61 : B1;
+3C62 : 91;
+[3C63..3C64] : 08;
+3C65 : D5;
+3C66 : B1;
+3C67 : 89;
+[3C68..3C69] : D5;
+3C6A : B1;
+[3C6B..3C6C] : 08;
+3C6D : 91;
+[3C6E..3C6F] : 89;
+[3C70..3C71] : D5;
+3C72 : B1;
+[3C73..3C74] : 08;
+3C75 : B1;
+3C76 : AD;
+3C77 : 89;
+[3C78..3C7A] : D5;
+[3C7B..3C7C] : B1;
+3C7D : 08;
+3C7E : 44;
+3C7F : 84;
+
+-- Sprite 242 - Parte do Background
+[3C80..3C81] : AD;
+[3C82..3C85] : DA;
+3C86 : B1;
+[3C87..3C89] : AD;
+3C8A : D5;
+[3C8B..3C8D] : DA;
+3C8E : 91;
+3C8F : 89;
+[3C90..3C91] : AD;
+[3C92..3C95] : D5;
+3C96 : B1;
+[3C97..3C99] : 89;
+[3C9A..3C9D] : D5;
+3C9E : 91;
+3C9F : AD;
+[3CA0..3CA1] : 89;
+[3CA2..3CA5] : D5;
+3CA6 : 91;
+3CA7 : AD;
+[3CA8..3CA9] : 89;
+[3CAA..3CAC] : D5;
+3CAD : DA;
+3CAE : 91;
+3CAF : AD;
+[3CB0..3CB1] : 89;
+[3CB2..3CB5] : D5;
+3CB6 : 91;
+3CB7 : AD;
+3CB8 : 84;
+3CB9 : 89;
+3CBA : B1;
+[3CBB..3CBC] : D5;
+3CBD : DA;
+3CBE : 91;
+3CBF : AD;
+
+-- Sprite 243 - Parte do Background
+[3CC0..3CC2] : AD;
+3CC3 : 89;
+3CC4 : DA;
+[3CC5..3CC6] : D5;
+3CC7 : DA;
+3CC8 : 89;
+[3CC9..3CCA] : AD;
+3CCB : 89;
+3CCC : DA;
+[3CCD..3CCE] : D5;
+3CCF : DA;
+[3CD0..3CD2] : AD;
+3CD3 : 89;
+[3CD4..3CD5] : DA;
+3CD6 : D5;
+3CD7 : DA;
+[3CD8..3CDA] : AD;
+3CDB : 89;
+3CDC : DA;
+3CDD : D5;
+[3CDE..3CDF] : DA;
+[3CE0..3CE2] : AD;
+3CE3 : 89;
+3CE4 : DA;
+[3CE5..3CE6] : D5;
+3CE7 : DA;
+3CE8 : 89;
+[3CE9..3CEA] : AD;
+3CEB : 89;
+3CEC : DA;
+[3CED..3CEF] : D5;
+[3CF0..3CF2] : AD;
+3CF3 : 89;
+3CF4 : DA;
+[3CF5..3CF7] : D5;
+3CF8 : 89;
+[3CF9..3CFA] : AD;
+3CFB : 89;
+3CFC : DA;
+[3CFD..3CFE] : D5;
+3CFF : B1;
+
+-- Sprite 244 - Parte do Background
+3D00 : AD;
+[3D01..3D02] : 89;
+3D03 : AD;
+[3D04..3D05] : D5;
+3D06 : 89;
+3D07 : 08;
+3D08 : AD;
+[3D09..3D0B] : 89;
+3D0C : D5;
+3D0D : B1;
+3D0E : 89;
+3D0F : 08;
+3D10 : AD;
+[3D11..3D13] : 89;
+3D14 : D5;
+3D15 : B1;
+3D16 : 89;
+3D17 : 08;
+3D18 : AD;
+[3D19..3D1B] : 89;
+3D1C : D5;
+3D1D : B1;
+3D1E : 08;
+3D1F : 91;
+3D20 : AD;
+[3D21..3D23] : 89;
+3D24 : D5;
+3D25 : 91;
+3D26 : 08;
+3D27 : 91;
+[3D28..3D2B] : 89;
+3D2C : B1;
+3D2D : 91;
+3D2E : 08;
+3D2F : 91;
+[3D30..3D33] : 89;
+3D34 : B1;
+3D35 : 91;
+3D36 : 08;
+3D37 : 91;
+[3D38..3D39] : 89;
+3D3A : 84;
+3D3B : 44;
+[3D3C..3D3D] : 08;
+[3D3E..3D3F] : B1;
+
+-- Sprite 245 - Parte do Background
+3D40 : 08;
+3D41 : 89;
+[3D42..3D47] : D5;
+3D48 : 08;
+3D49 : 89;
+[3D4A..3D4F] : D5;
+3D50 : 08;
+3D51 : 89;
+[3D52..3D5F] : D5;
+[3D60..3D63] : B1;
+[3D64..3D68] : D5;
+[3D69..3D6A] : B1;
+[3D6B..3D6F] : D5;
+3D70 : B1;
+[3D71..3D7F] : D5;
+
+-- Sprite 246 - Parte do Background
+3D80 : D5;
+[3D81..3D87] : B1;
+[3D88..3D8A] : D5;
+[3D8B..3D8F] : B1;
+[3D90..3D91] : D5;
+[3D92..3D97] : B1;
+[3D98..3D9B] : D5;
+[3D9C..3D9D] : B1;
+[3D9E..3DBF] : D5;
+
+-- Sprite 247 - Parte do Background
+[3DC0..3DCA] : B1;
+[3DCB..3DCF] : D5;
+[3DD0..3DD2] : B1;
+[3DD3..3DFF] : D5;
+
+-- Sprite 248 - Parte do Background
+[3E00..3E07] : B1;
+[3E08..3E0B] : D5;
+[3E0C..3E0D] : B1;
+[3E0E..3E12] : D5;
+3E13 : B1;
+[3E14..3E1D] : D5;
+[3E1E..3E1F] : B1;
+[3E20..3E26] : D5;
+3E27 : B1;
+[3E28..3E2E] : D5;
+3E2F : B1;
+[3E30..3E3F] : D5;
+
+-- Sprite 249 - Parte do Background
+[3E40..3E57] : B1;
+[3E58..3E67] : D5;
+[3E68..3E69] : B1;
+[3E6A..3E7A] : D5;
+3E7B : B1;
+[3E7C..3E7F] : D5;
+
+-- Sprite 250 - Parte do Background
+[3E80..3E84] : D5;
+3E85 : B1;
+[3E86..3E8E] : D5;
+3E8F : B1;
+[3E90..3E96] : D5;
+3E97 : B1;
+[3E98..3EBF] : D5;
+
+-- Sprite 251 - Parte do Background
+[3EC0..3ED8] : D5;
+3ED9 : B1;
+[3EDA..3EE0] : D5;
+3EE1 : B1;
+[3EE2..3EE8] : D5;
+3EE9 : B1;
+[3EEA..3EF0] : D5;
+3EF1 : B1;
+[3EF2..3EFF] : D5;
+
+-- Sprite 252 - Parte do Background
+3F00 : B1;
+[3F01..3F07] : D5;
+3F08 : B1;
+[3F09..3F0F] : D5;
+3F10 : B1;
+[3F11..3F19] : D5;
+3F1A : B1;
+[3F1B..3F1F] : D5;
+3F20 : B1;
+3F21 : D5;
+3F22 : B1;
+[3F23..3F29] : D5;
+3F2A : B1;
+[3F2B..3F31] : D5;
+3F32 : B1;
+[3F33..3F3F] : D5;
+
+-- Sprite 253 - Parte do Background
+[3F40..3F44] : D5;
+3F45 : B1;
+[3F46..3F4C] : D5;
+3F4D : B1;
+[3F4E..3F54] : D5;
+3F55 : B1;
+[3F56..3F5A] : D5;
+3F5B : B1;
+[3F5C..3F62] : D5;
+3F63 : B1;
+[3F64..3F6A] : D5;
+3F6B : B1;
+[3F6C..3F72] : D5;
+3F73 : B1;
+[3F74..3F7A] : D5;
+3F7B : B1;
+[3F7C..3F7F] : D5;
+
+-- Sprite 254 - Parte do Background
+[3F80..3F86] : D5;
+3F87 : B1;
+[3F88..3F95] : D5;
+3F96 : B1;
+[3F97..3F9B] : D5;
+3F9C : B1;
+[3F9D..3FA3] : D5;
+3FA4 : B1;
+[3FA5..3FAB] : D5;
+3FAC : B1;
+[3FAD..3FB3] : D5;
+3FB4 : B1;
+[3FB5..3FBF] : D5;
+
+-- Sprite 255 - Parte do Background
+3FC0 : B1;
+[3FC1..3FFF] : D5;
+
+
+-- Novos tiles da imagem (40x30 = 1200 tiles)
+
+END;

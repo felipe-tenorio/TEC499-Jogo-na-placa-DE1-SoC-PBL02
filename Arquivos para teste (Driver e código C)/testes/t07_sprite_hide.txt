@@ -1,0 +1,5 @@
+# T07 Sprite: esconder / mostrar
+0x0000000A   # SPR_HIDE 0
+0x00000002   # SWAP_FB
+0x00000409   # SPR_CFG 0,1,0,0,0 (reabilita)
+0x00000002   # SWAP_FB

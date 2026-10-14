@@ -1,0 +1,42 @@
+module compositor (
+    input  wire enable_bg, enable_sprite, enable_poly,
+    input  wire [7:0] cor_bg,
+    input  wire bg_valido,
+    input  wire [7:0] cor_poly,   input wire poly_ativo,
+    input  wire [7:0] cor_sprite, input wire sprite_ativo,
+    // 1 = sprite > polígono > background  (padrão inicial)
+    // 0 = polígono > sprite > background
+    input  wire sprite_over_poly,
+    output reg  [7:0] cor_final
+);
+
+    // Prioridade configurável entre sprite e polígono; background sempre por último.
+    wire sprite_hit = enable_sprite && sprite_ativo && (cor_sprite != 8'd0);
+    wire poly_hit   = enable_poly   && poly_ativo   && (cor_poly   != 8'd0);
+    wire bg_hit     = enable_bg     && bg_valido;
+
+    always @(*) begin
+        if (sprite_over_poly) begin
+            // sprite > polígono > background
+            if (sprite_hit)
+                cor_final = cor_sprite;
+            else if (poly_hit)
+                cor_final = cor_poly;
+            else if (bg_hit)
+                cor_final = cor_bg;
+            else
+                cor_final = 8'd0;
+        end else begin
+            // polígono > sprite > background
+            if (poly_hit)
+                cor_final = cor_poly;
+            else if (sprite_hit)
+                cor_final = cor_sprite;
+            else if (bg_hit)
+                cor_final = cor_bg;
+            else
+                cor_final = 8'd0;
+        end
+    end
+
+endmodule

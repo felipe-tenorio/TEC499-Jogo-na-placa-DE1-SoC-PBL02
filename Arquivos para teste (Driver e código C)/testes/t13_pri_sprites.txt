@@ -1,0 +1,10 @@
+# T13 Prioridade sprite x sprite (campo pri do SPR_CFG)
+0x0800008C   # SPR_PAT 1, 2
+0x09A0F407   # SPR_POS 1, 104, 122
+0x08000409   # SPR_CFG 1,1,0,0,0 (pri 0: sprite 0 na frente)
+0x00000002   # SWAP_FB
+0x080004C9   # SPR_CFG 1,1,0,0,3 (pri 3: sprite 1 na frente)
+0x00000002   # SWAP_FB
+0x0800000A   # SPR_HIDE 1
+0x00000011   # PLY_HIDE 0
+0x00000002   # SWAP_FB

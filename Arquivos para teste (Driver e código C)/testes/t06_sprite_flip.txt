@@ -1,0 +1,7 @@
+# T06 Sprite: espelhamento
+0x00000609   # SPR_CFG 0,1,1,0,0 (flip H)
+0x00000002   # SWAP_FB
+0x00000509   # SPR_CFG 0,1,0,1,0 (flip V)
+0x00000002   # SWAP_FB
+0x00000409   # SPR_CFG 0,1,0,0,0 (normal)
+0x00000002   # SWAP_FB

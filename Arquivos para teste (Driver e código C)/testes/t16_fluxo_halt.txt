@@ -1,0 +1,4 @@
+# T16 JMP/BEQ/HALT
+0x00000019   # JMP 0 (NOP no hardware)
+0x0010441A   # BEQ R1, R1, 4 (NOP no hardware)
+0x0000003F   # HALT

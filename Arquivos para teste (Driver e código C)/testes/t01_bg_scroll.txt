@@ -1,0 +1,4 @@
+# T01 Scroll absoluto do background
+0x00000A04   # SET_BG_X 40
+0x00000785   # SET_BG_Y 30
+0x00000002   # SWAP_FB

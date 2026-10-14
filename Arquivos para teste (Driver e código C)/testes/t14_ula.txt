@@ -1,0 +1,16 @@
+# T14 ULA/registradores (resultado: scroll = 56, 0)
+0x00000004   # SET_BG_X 0
+0x00000005   # SET_BG_Y 0
+0x00020055   # MOVI R1, 8
+0x3FFE0095   # MOVI R2, -8
+0x00008406   # MOV_BG R1, R2      -> (8, 248)
+0x000044D3   # ADD R3, R1, R1     -> R3 = 16
+0x00004114   # SUB R4, R0, R1     -> R4 = -8
+0x0000C558   # OR  R5, R1, R3     -> R5 = 24
+0x00005597   # AND R6, R5, R1     -> R6 = 8
+0x00000DD6   # MOV R7, R3         -> R7 = 16
+0x00000C06   # MOV_BG R3, R0      -> x = 24
+0x00001006   # MOV_BG R4, R0      -> x = 16
+0x00001406   # MOV_BG R5, R0      -> x = 40
+0x00019C06   # MOV_BG R7, R6      -> (56, 0)
+0x00000002   # SWAP_FB

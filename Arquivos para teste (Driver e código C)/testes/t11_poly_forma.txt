@@ -1,0 +1,7 @@
+# T11 Polígono: tamanho e tipo
+0x0008000E   # PLY_ADJ 0, 32
+0x00000002   # SWAP_FB
+0x1160E00D   # PLY_DRAW 0, 2, 88, 112 (triângulo)
+0x00000002   # SWAP_FB
+0x0160E00D   # PLY_DRAW 0, 0, 88, 112 (retângulo)
+0x00000002   # SWAP_FB

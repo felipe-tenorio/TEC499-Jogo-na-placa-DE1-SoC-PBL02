@@ -1,0 +1,5 @@
+# T10 Polígono: movimento relativo (usa R1=8, R2=-8)
+0x00020055   # MOVI R1, 8
+0x3FFE0095   # MOVI R2, -8
+0x00008410   # PLY_MOV 0, R1, R2
+0x00000002   # SWAP_FB
