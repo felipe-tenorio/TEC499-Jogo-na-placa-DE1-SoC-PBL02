@@ -66,37 +66,7 @@ Modo de execução passo a passo (depuração) | Atendido | comandos `CTRL FILA_
 
 ### Visão geral da arquitetura
 
-O top-level (`ghrd_top.v`) instancia o sistema do HPS gerado no Platform Designer (`soc_system`) e o coprocessador (`coprocessor_core.v`). O HPS se comunica com o coprocessador por três PIOs ligados ao barramento *lightweight HPS-to-FPGA*. Dentro do coprocessador, as instruções passam por uma interface de comandos, uma FIFO, o núcleo da ISA (IR, unidade de controle, banco de registradores e ULA) e, por fim, chegam ao banco de registradores gráficos e às memórias de vídeo, que alimentam os motores.
-
-```mermaid
-flowchart LR
-    ARM["HPS (ARM Cortex-A9)"] -- "pio_cmd_data (32b)\npio_cmd_push (1b)" --> PIO["pio_cmd_iface\n(detecção de borda +\ncomandos CTRL)"]
-    PIO -- "pio_status (8b)" --> ARM
-    PIO --> FIFO["fifo_cmd\n32 × 32 bits"]
-    subgraph ISA["isa_core (clk_sys = 100 MHz)"]
-        FIFO --> IR["IR"]
-        IR --> CU["control_unit\n(FSM)"]
-        IR --> GPR["gpr_bank\n16 × 16 bits"]
-        GPR --> ALU["alu"]
-        ALU --> GPR
-        GPR --> CU
-    end
-    CU -- "gfx_wr_en / addr / data" --> REGS["banco_registradores"]
-    CU -- "mem_we / addr / data" --> MEM["RAMs de vídeo\ntilemap A/B, padrões"]
-    REGS -- "cópia na VSYNC" --> SH["registradores\nsombra (clk_pix)"]
-    subgraph PIX["Domínio de pixel (clk_pix = 25 MHz)"]
-        SH --> BG["motor_background"]
-        SH --> SPR["motor_sprites"]
-        SH --> PLY["rasterizador_multi"]
-        MEM --> BG
-        MEM --> SPR
-        BG --> COMP["compositor"]
-        SPR --> COMP
-        PLY --> COMP
-        COMP --> FB["frame_buffer_duplo\n2 × 320 × 240"]
-        FB --> VGA["vga_driver\n640 × 480 @ 60 Hz"]
-    end
-```
+O top-level (`ghrd_top.v`) instancia o sistema do HPS gerado no Platform Designer e o coprocessador. O HPS se comunica com o coprocessador por três PIOs ligados ao barramento. Dentro do coprocessador, as instruções passam por uma interface de comandos, uma FIFO, o núcleo da ISA (IR, unidade de controle, banco de registradores e ULA) e, por fim, chegam ao banco de registradores gráficos e às memórias de vídeo, que alimentam os motores.
 
 <div align="center">
  <figure>
@@ -112,25 +82,24 @@ flowchart LR
 ### Busca passiva
 
 Foi escolhida a **busca passiva**: em vez de uma memória de instruções interna, o coprocessador recebe as instruções do ARM por uma fila de comandos. Essa decisão foi tomada porque:
-- o jogo final será executado no ARM, então é ele quem decide o que desenhar a cada quadro (posição do jogador, inimigos, explosões), algo que um programa fixo em `.mif` não conseguiria fazer;
+- o jogo final será executado no ARM, então é ele quem decide o que desenhar a cada quadro (posição do jogador, inimigos, explosões). O programa fixo em `.mif` não conseguiria fazer isso;
 - prepara diretamente o caminho para o driver Linux em Assembly ARM das próximas etapas;
 - permite trocar o programa de teste sem recompilar a FPGA.
 
-A consequência é que o controle de fluxo (laços e desvios) fica no programa do ARM, por isso `JMP` e `BEQ` não têm efeito no hardware.
+A consequência é que o controle de fluxo (laços e desvios) fica no programa do ARM.
 
 ### Domínios de clock e sincronização
 
 Foram mantidos os dois PLLs da primeira etapa, gerados a partir do `CLOCK_50`:
-- `meu_pll`: gera o clock de pixel de 25 MHz (`clk_pix`) para 640 × 480 a 60 Hz;
-- `pllpara100`: gera o clock de sistema de 100 MHz (`clk_sys`), usado pela interface de comandos, pela ISA, pelo banco de registradores gráficos e pelas RAMs de vídeo.
+-  clock de pixel de 25 MHz (`clk_pix`) para 640 × 480 a 60 Hz;
+- clock de sistema de 100 MHz (`clk_sys`), usado pela interface de comandos, pela ISA, pelo banco de registradores gráficos e pelas RAMs de vídeo.
 
-O reset global combina o `hps_fpga_reset_n` com os sinais `locked` dos dois PLLs. Os cruzamentos entre os domínios são feitos da seguinte forma:
-- **VSYNC → clk_sys:** sincronizador de 3 flip-flops com detecção de borda (`vsync_borda_sys`), usado pela instrução `WAIT_VS` e pelo bit de status;
+O reset global combina o `hps_fpga_reset_n` com os sinais `locked` dos dois PLLs. Os cruzamentos entre os domínios são assim:
+- **VSYNC → clk_sys:** sincronizador de 3 flip-flops com detecção de borda, usado pela instrução `WAIT_VS` e pelo bit de status;
 - **Pedidos de troca (clk_sys → clk_pix):** cada pedido inverte um *toggle*, que atravessa 3 flip-flops e é convertido de volta em pulso no domínio de pixel;
-- **Atributos gráficos (clk_sys → clk_pix):** todos os atributos de sprites, polígonos, camadas e scroll são concatenados em um único vetor, registrados uma vez no domínio de pixel (`attr_meta`) e só copiados para os registradores usados pelos motores (`attr_pix`) na borda da VSYNC. Assim, uma cena nunca é desenhada com metade dos atributos antigos e metade novos;
+- **Atributos gráficos (clk_sys → clk_pix):** todos os atributos de sprites, polígonos, camadas e scroll são concatenados em um único vetor, registrados uma vez no domínio de pixel (`attr_meta`) e só copiados para os registradores usados pelos motores na borda da VSYNC. Assim, uma cena nunca é desenhada com metade dos atributos antigos e metade novos;
 - **Buffer visível (clk_pix → clk_sys):** `bg_frente` e `fb_frente` passam por 2 flip-flops e são usados pela unidade de controle para saber quando uma troca terminou.
 
-Os caminhos para o primeiro estágio de cada sincronizador foram marcados como `set_false_path` em `soc_system_timing.sdc`.
 
 ### Interface de comandos (pio_cmd_iface)
 
