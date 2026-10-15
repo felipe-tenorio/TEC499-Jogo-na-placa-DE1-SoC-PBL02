@@ -313,3 +313,616 @@ A instrução retirada da FIFO é guardada no IR, de onde saem o opcode (`ir[5:0
 O banco possui 16 registradores de 16 bits com leitura combinacional em duas portas (`Rs = ir[13:10]`, `Rt = ir[17:14]`) e escrita síncrona (`Rd = ir[9:6]`). `R0` sempre retorna zero, o que permite usar `R0` como "sem deslocamento" nas instruções de movimento. A ULA recebe `Rs` e `Rt` e devolve o resultado para `Rd`. No caso do `MOVI`, o valor escrito vem do campo imediato da instrução.
 </details>
 <hr>
+
+### Motores Gráficos
+<details>
+<summary>Unidades funcionais gráficas</summary>
+
+- **Motor de Background:** tilemap de 40 × 30 entradas e tiles de 8 × 8 pixels (256 padrões), com scroll horizontal e vertical e repetição da cena. Pode ser trocado entre dois tilemaps (A e B) e editado em tempo de execução com `SET_TILE` / `WR_RAM`.
+- **Motor de Sprites:** até 32 sprites simultâneos de 16 × 16 pixels, com posição (X, Y), padrão, habilitação, prioridade e espelhamento horizontal/vertical, todos configurados por instruções (`SPR_POS`, `SPR_MOV`, `SPR_CFG`, `SPR_PAT`, `SPR_HIDE`).
+- **Rasterizador de Polígonos:** cada polígono terá parâmetros de forma, origem, tamanho, cor e habilitação. Formas disponíveis (campo `tipo`):
+
+  Tipo | Forma
+  :---: | :---
+  0 | Retângulo (largura = tamanho, altura = 3/4 do tamanho)
+  1 | Triângulo retângulo (ângulo reto em baixo à esquerda)
+  2 | Triângulo isósceles com ápice para cima
+  3 | Triângulo isósceles com ápice para baixo
+  4 | Triângulo escaleno
+  5 | Quadrado
+
+</details>
+<hr>
+
+### Controle de Quadro, Compositor e Driver VGA
+<details>
+<summary>Composição de cena e saída de vídeo</summary>
+
+- **Compositor:** combina background, polígonos e sprites com transparência pelo índice `0` e prioridade configurável entre sprites e polígonos (`SET_PRI`).
+- **Frame buffer duplo:** recebe o quadro composto no buffer escondido e entrega o buffer visível ao VGA. A troca acontece somente na VSYNC.
+- **Driver VGA:** gera o timing de 640 × 480 a 60 Hz e as coordenadas de varredura. Cada pixel lógico de 320 × 240 é duplicado em 2 × 2 na saída.
+
+</details>
+<hr>
+
+</details>
+
+## ISA
+
+<details>
+<summary>Formatos de instrução</summary>
+
+Todas as instruções possuem **32 bits**, com o opcode sempre nos 6 bits menos significativos. Foram definidos quatro formatos:
+
+```
+        31        :      18 17   :  14 13      10 9   :    6 5   :    0
+  R  : |        0          |    Rt    |    Rs    |    Rd    |  OPCODE  |
+  I  : |       Imm[17:0]              |    Rs    |    Rd    |  OPCODE  |
+  G  : |          campos gráficos      ir[31:6]             |  OPCODE  |
+  J  : |          alvo / flags         ir[31:6]             |  OPCODE  |
+```
+
+- **R:** operações entre registradores (`ADD`, `SUB`, `AND`, `OR`, `MOV`) e movimentos relativos, que usam `Rs` como deslocamento em X e `Rt` como deslocamento em Y;
+- **I:** carga de imediato (`MOVI`), com valor de 16 bits em `ir[29:14]`;
+- **G:** instruções gráficas, cujos campos são definidos individualmente;
+- **J:** desvios (reservados).
+<hr>
+</details>
+
+<details>
+<summary>Tabela de instruções</summary>
+
+Opcode | Mnemônico | Formato | Campos (bits do IR) | Função
+:---: | :--- | :---: | :--- | :---
+0 | `NOP` | — | — | Nenhuma operação
+1 | `WAIT_VS` | G | — | Espera a próxima borda de VSYNC
+2 | `SWAP_FB` | G | — | Troca o frame buffer na VSYNC e espera a troca terminar
+3 | `SET_LAYER` | G | `[8:6]` = {poly, sprite, bg} | Habilita/desabilita as camadas gráficas
+4 | `SET_BG_X` | G | `[13:6]` = x | Scroll horizontal absoluto
+5 | `SET_BG_Y` | G | `[13:6]` = y | Scroll vertical absoluto
+6 | `MOV_BG` | R | `Rs` = dx, `Rt` = dy | Movimentação do background
+7 | `SPR_POS` | G | `[31:27]` = id, `[26:18]` = x, `[17:9]` = y | Posição absoluta do sprite
+8 | `SPR_MOV` | R | `[22:18]` = id, `Rs` = dx, `Rt` = dy | Movimentação do sprite
+9 | `SPR_CFG` | G | `[31:27]` = id, `[10]` = enable, `[9]` = flip H, `[8]` = flip V, `[7:6]` = prioridade | Configura o sprite
+10 | `SPR_HIDE` | G | `[31:27]` = id | Desabilita o sprite
+11 | `SPR_SEL` | G | `[10:6]` = id | Seleciona o sprite ativo no banco gráfico
+12 | `SPR_PAT` | G | `[31:27]` = id, `[10:6]` = padrão | Escolhe o padrão 16 × 16 do sprite
+13 | `PLY_DRAW` | G | `[31:30]` = slot, `[29:27]` = tipo, `[26:18]` = x, `[17:9]` = y | Define forma e origem e habilita o polígono
+14 | `PLY_ADJ` | G | `[24:23]` = slot, `[22:14]` = tamanho | Ajusta o tamanho do polígono
+15 | `PLY_COR` | G | `[31:30]` = slot, `[13:6]` = cor | Define a cor (RGB332) do polígono
+16 | `PLY_MOV` | R | `[19:18]` = slot, `Rs` = dx, `Rt` = dy | Movimentação do polígono
+17 | `PLY_HIDE` | G | `[31:30]` = slot | Desabilita o polígono
+18 | `SET_PRI` | G | `[6]` = sprite sobre polígono | Prioridade entre sprites e polígonos
+19 | `ADD` | R | `Rd, Rs, Rt` | Rd = Rs + Rt
+20 | `SUB` | R | `Rd, Rs, Rt` | Rd = Rs − Rt
+21 | `MOVI` | I | `Rd`, `[29:14]` = imm16 | Rd = imm16
+22 | `MOV` | R | `Rd, Rs` | Rd = Rs
+23 | `AND` | R | `Rd, Rs, Rt` | Rd = Rs & Rt
+24 | `OR` | R | `Rd, Rs, Rt` | Rd = Rs or Rt
+25 | `JMP` | J | — | Reservado (executado como NOP)
+26 | `BEQ` | J | — | Reservado (executado como NOP)
+27 | `SWAP_BG` | G | — | Troca o tilemap A ↔ B na VSYNC e espera a troca terminar
+28 | `SET_TILE` | G | `[31]` = ambos, `[30]` = visível, `[29:25]` = linha, `[24:19]` = coluna, `[13:6]` = tile | Escreve uma posição do tilemap
+29 | `WR_RAM` | G | `[31:30]` = memória, `[27:14]` = endereço, `[13:6]` = dado | Escreve um byte em uma memória de vídeo
+62 | `CTRL` | — | `[9:6]` = comando | Comando de controle (tratado pela `pio_cmd_iface`, não entra na FIFO)
+63 | `HALT` | — | — | Para o núcleo até um reset por software
+
+Observações:
+- Em `SET_TILE`, com `[31] = 0` a escrita vai para o tilemap escondido (`[30] = 0`) ou para o visível (`[30] = 1`); com `[31] = 1` vai para os dois. Posições fora de 40 × 30 são ignoradas;
+- Em `WR_RAM`, a memória é `00` = tilemap A, `01` = tilemap B, `10` = padrões de tiles, `11` = padrões de sprites. Endereços acima de 2047 nos tilemaps são ignorados;
+- Cores no formato **RGB332** (`RRRGGGBB`); o índice `0x00` é transparente.
+<hr>
+</details>
+
+<details>
+<summary>Sintaxe do Assembly e programa de demonstração</summary>
+
+A sintaxe definida pela equipe segue o padrão `MNEMÔNICO destino, operandos`, com registradores escritos como `R0`–`R15`, números em decimal ou hexadecimal (`0x`) e comentários iniciados por `;`:
+
+```asm
+; ---------- Programa de demonstração ----------
+; Inicialização
+        CTRL      RESET_TOTAL        ; zera ISA e registradores gráficos
+        SET_LAYER 0b111              ; liga background, sprites e polígonos
+        SET_PRI   1                  ; sprite > polígono > background
+        MOVI      R1, 2              ; velocidade do sprite em X
+        MOVI      R2, 1              ; velocidade do background
+
+; Sprite 0: Bomberman no centro
+        SPR_PAT   0, 0               ; sprite 0 usa o padrão 0
+        SPR_POS   0, 152, 112        ; posição (x, y)
+        SPR_CFG   0, EN, PRI=1       ; habilita, sem espelhamento
+
+; Polígono no slot 1: triângulo isósceles verde
+        PLY_DRAW  1, 2, 60, 40       ; slot, tipo, x, y
+        PLY_ADJ   1, 48              ; tamanho 48
+        PLY_COR   1, 0x1C            ; verde em RGB332
+
+; Laço de animação (repetido pelo ARM a cada quadro)
+loop:
+        SPR_MOV   0, R1, R0          ; sprite 0 anda 2 pixels para a direita
+        MOV_BG    R2, R0             ; background rola 1 pixel
+        PLY_MOV   1, R0, R2          ; polígono desce 1 pixel
+        SWAP_FB                      ; apresenta o quadro na VSYNC
+        JMP       loop               ; laço controlado pelo programa no ARM
+```
+
+Exemplos de codificação (palavras enviadas pelo ARM):
+
+Instrução | Palavra de 32 bits
+:--- | :---:
+`CTRL FILA_ON` | `0x0000007E`
+`SET_LAYER 0b111` | `0x000001C3`
+`SET_BG_X 40` | `0x00000A04`
+`MOVI R1, 16` | `0x00040055`
+`SPR_POS 0, 100, 80` | `0x0190A007`
+`SPR_MOV 0, R1, R0` | `0x00000408`
+`PLY_DRAW 1, 2, 60, 40` | `0x50F0500D`
+`SWAP_FB` | `0x00000002`
+`HALT` | `0x0000003F`
+<hr>
+</details>
+
+## Mapa de Registradores
+
+<details>
+<summary>Interface MMIO com o ARM (PIOs)</summary>
+
+Os PIOs ficam na ponte *lightweight HPS-to-FPGA* (base `0xFF200000` no ARM). Os endereços dos deslocamentos dentro da ponte (`hps_0.h`) são:
+
+Endereço | Nome | Direção | Função
+:---: | :--- | :---: | :---
+`0x10010` | PIO_CMD_DATA | ARM → FPGA | Palavra de 32 bits da instrução
+`0x10020` | PIO_CMD_PUSH | ARM → FPGA | Borda de subida (0 → 1) envia a palavra
+`0x10030` | PIO_STATUS | FPGA → ARM | Status do coprocessador (8 bits)
+
+Protocolo de envio: o ARM escreve a instrução em `PIO_CMD_DATA`, escreve `1` e depois `0` em `PIO_CMD_PUSH` e lê `PIO_STATUS` para acompanhar a execução.
+<hr>
+</details>
+
+<details>
+<summary>Registrador de status</summary>
+
+Formato normal (`CTRL VER_STATUS`, padrão):
+
+Bit | Nome | Significado
+:---: | :--- | :---
+7 | `fb_frente` | Frame buffer visível (0 = A, 1 = B)
+6 | `bg_frente` | Tilemap visível (0 = A, 1 = B)
+5 | `halt` | Núcleo parado por `HALT`
+4 | `vsync` | Pulso de VSYNC
+3 | `fifo_empty` | FIFO vazia
+2 | `fifo_full` | FIFO cheia (novas palavras serão descartadas)
+1 | `modo_fila` | Modo fila ativo
+0 | `busy` | Executando uma instrução
+
+Formato de quantidade (`CTRL VER_QTD`): `[7] = 1`, `[6] = modo_fila`, `[5:0] = número de instruções na FIFO (0 a 32)`.
+<hr>
+</details>
+
+<details>
+<summary>Banco de registradores gráficos (interno)</summary>
+
+Diferente da primeira fase do projeto, agora esses registradores não são mais acessados pelo software. Eles são escritos pela unidade de controle ao executar as instruções.
+
+Endereço | Nome | Função
+:---: | :--- | :---
+`0x01` / `0x02` | BG_SCROLL_X / Y | Scroll absoluto do background
+`0x03` | SPRITE_SEL | Sprite selecionado (0 a 31)
+`0x04` / `0x05` | SPRITE_X / Y | Posição do sprite selecionado
+`0x06` | SPRITE_FLAGS | `[5:3]` prioridade, `[2]` enable, `[1]` flip H, `[0]` flip V
+`0x07` | SPRITE_PADRAO | Padrão do sprite selecionado
+`0x08` | LAYER_ENABLE | `[0]` background, `[1]` sprites, `[2]` polígonos
+`0x0B` | SWAP_BG | Pedido de troca do tilemap
+`0x0C` | SPRITE_OVER_POLY | Prioridade entre sprites e polígonos
+`0x0D` | SWAP_FB | Pedido de troca do frame buffer
+`0x0E` / `0x0F` | BG_DELTA_X / Y | Scroll += valor
+`0x21` / `0x22` | SPRITE_DELTA_X / Y | Posição do sprite selecionado += valor
+`0x30` a `0x4F` | POLY_CONFIG | `0x30 + slot × 8 + campo` (0 = x, 1 = y, 2 = tamanho, 3 = tipo, 4 = nº de vértices, 6 = cor, 7 = habilitado)
+`0x50` a `0x57` | POLY_DELTA | `0x50 + slot × 2` (+0 = dx, +1 = dy)
+<hr>
+</details>
+
+## Barramentos
+<details>
+<summary>Barramentos</summary>
+
+Barramento | Tamanho | Descrição
+:---: | :--- |:---
+PIO Data | 32 | Instrução enviada pelo ARM
+PIO Push | 1 | Sinal de envio (borda de subida)
+PIO Status | 8 | Estado do coprocessador lido pelo ARM
+Gfx Address | 16 | Endereço do registrador gráfico escrito pela unidade de controle
+Gfx Data | 9 | Dado do registrador gráfico (cobre coordenadas até 319)
+Mem | 4 + 14 + 8 | Habilitação por memória, endereço e dado das RAMs de vídeo
+VGA Out | 29 | Sinais físicos de vídeo
+
+### PIO Data / Push
+O ARM coloca a instrução de 32 bits em `pio_cmd_data` e gera uma borda de subida em `pio_cmd_push`. A `pio_cmd_iface` sincroniza o push com o `clk_sys`, detecta a borda e envia a palavra para a FIFO (ou executa o comando de controle, se o opcode for `CTRL`).
+
+### PIO Status
+Barramento de 8 bits lido pelo ARM, com os bits de `busy`, estado da FIFO, `halt`, VSYNC e buffers visíveis, ou com a quantidade de instruções na FIFO (ver [Registrador de status](#mapa-de-registradores)). É por ele que o software implementa o handshake.
+
+### Gfx Address / Data
+Barramento interno entre a unidade de controle e o `banco_registradores`. Quem o controla é a unidade de controle, e não o usuário. O dado de 9 bits é o tamanho necessário para representar a coordenada X máxima (319).
+
+### Mem
+Barramento interno de escrita nas memórias de vídeo: `mem_we[3:0]` seleciona a memória (`[0]` tilemap A, `[1]` tilemap B, `[2]` padrões de tiles, `[3]` padrões de sprites), `mem_addr` possui 14 bits e `mem_data` 8 bits.
+
+### VGA Out
+- Cores (24 bits): `VGA_R`, `VGA_G` e `VGA_B`, com 8 bits cada, obtidos a partir do pixel RGB332 do frame buffer;
+- Sincronismo (5 bits): `VGA_HS`, `VGA_VS`, `VGA_CLK`, `VGA_BLANK_N` e `VGA_SYNC_N`.
+<hr>
+</details>
+
+## Especificação do Hardware
+
+<details>
+<summary>Placa e ferramentas</summary>
+
+Item | Especificação
+:--- | :---
+Placa | Terasic DE1-SoC
+FPGA | Intel Cyclone V SoC 5CSEMA5F31C6
+HPS | ARM Cortex-A9 dual-core
+Clock de referência | `CLOCK_50` (50 MHz)
+Clocks gerados | 25 MHz (pixel) e 100 MHz (sistema)
+Saída de vídeo | Conector VGA da placa (DAC ADV7123)
+Ferramenta de síntese | Quartus Prime 25.1std.0 Lite Edition
+
+### LEDs da placa
+
+LED | Significado
+:---: | :---
+LEDR[0] | `busy` (executando instrução)
+LEDR[1] | Modo fila ativo
+LEDR[2] | FIFO cheia
+LEDR[3] | FIFO vazia
+LEDR[4] | `HALT`
+LEDR[9:5] | Modo normal: opcode da última instrução. Modo fila: quantidade de instruções na FIFO
+
+<hr>
+</details>
+
+## Testes
+
+<details>
+<summary>Testes</summary>
+
+### Software de teste no HPS
+<details>
+<summary>Driver em Assembly e programa de testes</summary>
+
+Os testes na placa são feitos por um programa executado no Linux do HPS. Ele não depende das chaves nem dos botões da placa: o modo fila, o passo a passo e os resets são comandos `CTRL` enviados por software.
+
+Arquivo | Função
+:--- | :---
+`coproc_driver.s` | Driver em **Assembly ARMv7**: mapeia a ponte *lightweight* (`0xFF200000`) com `open`/`mmap2` em `/dev/mem` e implementa o protocolo de envio pelos PIOs
+`coproc_driver.h` | Interface C do driver (protótipos, códigos de retorno e bits de status)
+`isa_coproc.h` | Macros de codificação de todas as instruções da ISA
+`test_grafico_hps.c` | Programa de testes: menu com 15 cenários, verificações automáticas e execução de arquivos de instruções
+`testes/t00` … `t16` | Roteiros de instruções em hexadecimal, executados com `-f` ou `-p`
+
+#### Funções do driver
+
+Função | O que faz
+:--- | :---
+`coproc_init()` / `coproc_close()` | Abre `/dev/mem` e mapeia/desmapeia a ponte LW (exige `sudo`)
+`coproc_status()` | Lê o `pio_status`
+`coproc_send(instr)` | Envia a instrução e espera ela terminar (FIFO vazia e `busy = 0`); se a instrução for o próprio `HALT`, terminar em `HALT` conta como sucesso
+`coproc_enfileira(instr)` | Só coloca a instrução na FIFO, esperando enquanto ela estiver cheia
+`coproc_espera()` | Espera a FIFO esvaziar e o núcleo ficar livre
+`coproc_ctrl(cmd)` | Envia um comando `CTRL` genérico; vale na hora, mesmo com a FIFO cheia ou em `HALT`
+`coproc_modo_fila(on)` | `CTRL FILA_ON` / `CTRL FILA_OFF`
+`coproc_passo()` | `CTRL PASSO` e espera a instrução terminar
+`coproc_reset(total)` | `CTRL RESET_ISA` (0) ou `CTRL RESET_TOTAL` (1)
+`coproc_fila_qtd()` | `CTRL VER_QTD`, lê a quantidade na FIFO e volta para `VER_STATUS`
+
+Toda espera tem limite de 2 s. Os retornos negativos indicam o motivo da falha: `-1` FIFO cheia, `-2` timeout, `-3` coprocessador em `HALT`, `-4` driver não iniciado e `-5` hardware sem suporte ao comando `CTRL` (`.sof` antigo gravado).
+
+#### Compilação e execução
+
+```bash
+gcc -O2 -Wall -o test_grafico test_grafico_hps.c coproc_driver.s
+```
+
+Modo | Comando
+:--- | :---
+Menu interativo | `sudo ./test_grafico`
+Um cenário | `sudo ./test_grafico 7`
+Todos os cenários em sequência | `sudo ./test_grafico todos`
+Arquivo de instruções | `sudo ./test_grafico -f testes/t03_sprite_mostrar.txt`
+
+O menu também possui as opções `A` (todos), `S` (mostrar status), `R` (reset total) e `0` (sair).
+
+#### Preparação automática
+
+Antes de qualquer teste, o programa confere se o hardware está pronto:
+1. Liga e desliga o modo fila e confere o bit `modo_fila` do status. Se o bit não mudar, o `.sof` gravado não reconhece os comandos `CTRL`;
+2. Faz um reset por software (total no menu; só da ISA nos modos `-f`/`-p`, para manter a cena entre arquivos) e confere que a FIFO ficou vazia e o `HALT` foi limpo;
+3. Envia `SWAP_FB` e confere que o bit `fb_frente` trocou, o que comprova que o VGA está gerando VSYNC.
+
+Antes de cada cenário do menu, a tela é levada a um estado conhecido (todas as camadas ligadas, scroll em (0, 0), `SET_PRI 1`, todos os sprites e polígonos escondidos) e os registradores `R1`–`R7` recebem as velocidades `-3` a `+3`, usadas pelas instruções de movimento relativo.
+
+Cada `SWAP_FB` bloqueia por cerca de 2 quadros, então ele também controla a velocidade das animações.
+</details>
+<hr>
+
+### Cenários de teste na placa
+<details>
+<summary>Menu de testes (test_grafico)</summary>
+
+Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_status` e imprimem `ok` / `FALHA`; no final o programa mostra o total. Nos demais, o resultado é conferido no monitor VGA.
+
+#### Cenário 1 - Scroll do background
+<details>
+<summary>Absoluto e relativo</summary>
+
+**Instruções:** `SET_LAYER`, `SET_BG_X`, `SET_BG_Y`, `MOVI`, `MOV_BG`, `SWAP_FB`
+
+**Procedimento:**
+1. Só a camada de background é habilitada, com scroll em (0, 0);
+2. Scroll absoluto para (80, 40);
+3. `R1 = 2`, `R2 = 1` e 40 quadros de `MOV_BG R1, R2`.
+
+**Saída esperada:**
+- O background salta para (80, 40) e depois rola na diagonal até (160, 80), repetindo a cena nas bordas.
+</details>
+
+#### Cenário 2 - Mostrar e mover um sprite
+<details>
+<summary>Movimento relativo com valores negativos</summary>
+
+**Instruções:** `SPR_PAT`, `SPR_POS`, `SPR_CFG`, `MOVI`, `SPR_MOV`
+
+**Procedimento:**
+1. Sprite 0 com padrão 0 em (100, 80), habilitado com prioridade 1;
+2. 50 quadros de `SPR_MOV` com (+3, +2);
+3. 50 quadros com (−3, −2), usando valores negativos em complemento de 2 nos registradores.
+
+**Saída esperada:**
+- O sprite anda na diagonal e volta exatamente para (100, 80).
+</details>
+
+#### Cenário 3 - Trocar padrões de sprite
+<details>
+<summary>Padrões, flips e prioridade entre dois sprites</summary>
+
+**Instruções:** `SPR_PAT`, `SPR_POS`, `SPR_CFG`, `SPR_HIDE`
+
+**Procedimento:**
+1. Sprite 0 no centro, alternando os padrões 0 a 7 a cada 300 ms (3 voltas);
+2. Espelhamento horizontal e depois vertical;
+3. Sprite 1 (padrão 3) sobreposto ao sprite 0, primeiro com prioridade 2 e depois com prioridade 0;
+4. Sprite 1 escondido.
+
+**Saída esperada:**
+- Troca do desenho sem mover o sprite;
+- Com prioridade 2 o sprite 1 fica na frente do sprite 0; com prioridade 0 fica atrás.
+</details>
+
+#### Cenário 4 - Mostrar e mover um polígono
+<details>
+<summary>Forma, cor, tamanho e prioridade</summary>
+
+**Instruções:** `PLY_COR`, `PLY_ADJ`, `PLY_DRAW`, `PLY_MOV`, `PLY_HIDE`, `SET_PRI`
+
+**Procedimento:**
+1. Retângulo vermelho (`0xE0`) de tamanho 40 em (50, 50);
+2. Troca para triângulo retângulo verde (`0x1C`);
+3. 60 quadros de `PLY_MOV` com (+2, +1) e aumento do tamanho para 70;
+4. Quadrado azul (`0x03`) no slot 1 em (220, 150) com o sprite 0 por cima, alternando `SET_PRI 1` e `SET_PRI 0`;
+5. Slot 0 escondido.
+
+**Saída esperada:**
+- O polígono muda de forma e cor no mesmo lugar, se move e cresce;
+- Com `SET_PRI 1` o sprite fica na frente do quadrado; com `SET_PRI 0` o quadrado cobre o sprite.
+</details>
+
+#### Cenário 5 - Demo completa
+<details>
+<summary>32 sprites + 4 polígonos + scroll</summary>
+
+**Instruções:** todas as gráficas, com `SPR_MOV`, `PLY_MOV` e `MOV_BG` a cada quadro
+
+**Procedimento:**
+1. Os 32 sprites, cada um com um padrão (0 a 31), em grade 8 × 4 e velocidades aleatórias;
+2. Os 4 polígonos com tipos, tamanhos e cores diferentes;
+3. 360 quadros (cerca de 12 s) com scroll de (+1, 0); a cada 45 quadros cada polígono muda de tipo, tamanho e cor.
+
+**Saída esperada:**
+- Todos os objetos se movem ao mesmo tempo, quicando nas bordas, sem tearing e sem objetos faltando em nenhum quadro.
+
+</details>
+
+#### Cenário 6 - Tiles no tilemap oculto
+<details>
+<summary>SET_TILE + SWAP_BG</summary>
+
+**Instruções:** `SET_TILE`, `SWAP_BG`
+
+**Procedimento:**
+1. Uma diagonal de 30 tiles é escrita no tilemap oculto;
+2. `SWAP_BG` traz o tilemap oculto para a tela;
+3. Novo `SWAP_BG` volta ao tilemap original.
+
+**Saída esperada:**
+- A tela não muda durante a escrita; a diagonal aparece inteira de uma vez no `SWAP_BG` e some no segundo.
+</details>
+
+#### Cenário 7 - Modo fila e passo a passo
+<details>
+<summary>Verificação automática</summary>
+
+**Instruções:** `CTRL FILA_ON`, `CTRL PASSO`, `CTRL FILA_OFF`, `CTRL VER_QTD`, `SPR_MOV`, `SWAP_FB`
+
+**Procedimento:**
+1. Com o sprite 0 na tela, o modo fila é ligado;
+2. São enfileiradas 22 instruções: `MOVI R1, 12`, `MOVI R2, 0` e 10 pares `SPR_MOV` + `SWAP_FB`;
+3. 8 instruções são executadas com `PASSO`, uma a cada 400 ms;
+4. O modo fila é desligado e o resto executa em sequência.
+
+**Verificações automáticas:**
+- bit `modo_fila` do status ligado;
+- 22 instruções na fila e coprocessador parado;
+- exatamente 14 instruções restantes depois de 8 passos;
+- fila executada por completo e vazia no final.
+
+**Saída esperada:**
+- O sprite anda 12 px a cada `SWAP_FB` executado e termina 120 px à direita;
+- LEDR[1] aceso durante o modo fila e LEDR[9:5] mostrando a quantidade na FIFO.
+
+</details>
+
+#### Cenário 8 - FIFO cheia, HALT e reset por software
+<details>
+<summary>Verificação automática</summary>
+
+**Instruções:** `NOP`, `HALT`, `CTRL RESET_ISA`, `CTRL RESET_TOTAL`
+
+**Procedimento:**
+1. Com o modo fila ligado, 32 `NOP` enchem a FIFO;
+2. `RESET_ISA` esvazia a fila cheia;
+3. `HALT` é executado e, em seguida, um `NOP` é enviado;
+4. `RESET_ISA` tira o núcleo do `HALT`;
+5. Um sprite é mostrado e `RESET_TOTAL` limpa a cena.
+
+**Verificações automáticas:**
+- 32 instruções na fila e bit `fifo_full` ligado;
+- comandos `CTRL` funcionam com a fila cheia e o reset da ISA esvazia a FIFO;
+- o reset da ISA mantém o modo fila escolhido;
+- `HALT` executado e indicado no status;
+- em `HALT` o `NOP` não executa (o driver retorna `-3`);
+- `RESET_ISA` tira do `HALT` e o núcleo volta a executar;
+- `RESET_TOTAL` desliga o modo fila.
+
+**Saída esperada:**
+- LEDR[2] aceso com a fila cheia e LEDR[4] aceso no `HALT`;
+- Tela preta depois do reset total (todas as camadas desligadas), sem reprogramar a FPGA.
+</details>
+
+#### Cenário 9 - Troca de tiles em intervalos
+<details>
+<summary>Verificação automática</summary>
+
+**Instruções:** `SET_TILE` (oculto e visível), `SWAP_BG`
+
+**Procedimento:**
+1. Parte 1: 6 faixas de 5 linhas são escritas no tilemap **oculto**, uma a cada 900 ms;
+2. Parte 2: `SWAP_BG` mostra as 6 faixas;
+3. Parte 3: 3 faixas de 10 linhas são escritas no tilemap **visível**;
+4. `SWAP_BG` final volta ao tilemap original.
+
+**Verificações automáticas:**
+- o tilemap da tela não muda durante a parte 1 (bit `bg_frente`);
+- `SWAP_BG` troca o tilemap da tela;
+- o `SWAP_BG` final volta ao tilemap inicial.
+
+**Saída esperada:**
+- Na parte 1 nada muda na tela; na parte 2 todas as faixas aparecem juntas; na parte 3 cada faixa aparece assim que é escrita.
+</details>
+
+#### Cenário 10 - Troca de background
+<details>
+<summary>Verificação automática</summary>
+
+**Instruções:** `SET_TILE`, `SWAP_BG`, `MOV_BG`
+
+**Procedimento:**
+1. O tilemap oculto recebe uma moldura e uma faixa central;
+2. Parte 1: 8 trocas A ↔ B, uma a cada 700 ms;
+3. Parte 2: 120 quadros de scroll (+2, +1) com uma troca a cada 30 quadros.
+
+**Verificações automáticas:**
+- cada `SWAP_BG` alterna o bit `bg_frente`.
+
+**Saída esperada:**
+- Alternância entre o background original e o da moldura, inclusive durante o scroll, sem quadros misturados.
+</details>
+
+#### Cenário 11 - Múltiplos sprites com movimentação
+<details>
+<summary>12 sprites independentes</summary>
+
+**Instruções:** `SPR_PAT`, `SPR_POS`, `SPR_CFG`, `SPR_MOV`, `SPR_HIDE`
+
+**Procedimento:**
+1. 12 sprites (padrões 0 a 11) com velocidades aleatórias;
+2. 250 quadros de movimento, quicando nas bordas;
+3. Os sprites são escondidos um a um.
+
+**Saída esperada:**
+- Cada sprite se move com velocidade própria e desaparece na ordem.
+</details>
+
+#### Cenário 12 - Múltiplos polígonos com movimentação
+<details>
+<summary>Os 6 tipos de polígono</summary>
+
+**Instruções:** `PLY_COR`, `PLY_ADJ`, `PLY_DRAW`, `PLY_MOV`, `PLY_HIDE`
+
+**Procedimento:**
+1. Grupo 1: tipos 0, 1, 2 e 4; grupo 2: tipos 3, 4, 5 e 2, com tamanhos 24, 40, 56 e 72;
+2. 200 quadros de movimento para cada grupo.
+
+**Saída esperada:**
+- Os 4 slots se movem ao mesmo tempo; todas as 6 formas aparecem preenchidas e sem distorção.
+
+</details>
+
+#### Cenário 13 - Transparência
+<details>
+<summary>Sprite 4 sobre polígono</summary>
+
+**Instruções:** `PLY_COR`, `PLY_DRAW`, `SPR_PAT`, `SPR_POS`, `SPR_CFG`
+
+**Procedimento:**
+1. Quadrado verde (`0x1C`) de tamanho 64 no centro da tela, com o sprite 4 (padrão 4) por cima;
+2. A cor do polígono alterna 6 vezes entre `0x00` (transparente) e verde.
+
+**Saída esperada:**
+- Nas partes transparentes do sprite aparece o polígono (quando verde) ou o background (quando `0x00`).
+</details>
+
+#### Cenário 14 - Troca de prioridade
+<details>
+<summary>Sprite × polígono e sprite × sprite</summary>
+
+**Instruções:** `SET_PRI`, `SPR_CFG` (campo de prioridade)
+
+**Procedimento:**
+1. Parte A: sprite 0 sobre um quadrado azul de tamanho 80, alternando `SET_PRI 1` e `SET_PRI 0` (3 vezes);
+2. Parte B: 3 sprites sobrepostos (padrões 0, 3 e 5); a cada segundo as prioridades (0 a 3) são rodadas para trazer outro sprite para a frente (2 voltas).
+
+**Saída esperada:**
+- Parte A: o sprite e o polígono trocam de posição na frente;
+- Parte B: o sprite com maior prioridade sempre fica na frente dos outros.
+</details>
+
+#### Cenário 15 - Espelhamentos
+<details>
+<summary>Horizontal, vertical e ambos</summary>
+
+**Instruções:** `SPR_CFG` (flip H e flip V), `SPR_MOV`
+
+**Procedimento:**
+1. Parte A: 4 sprites lado a lado com o mesmo padrão (normal, horizontal, vertical e horizontal + vertical), para os padrões 0 e 3;
+2. Parte B: sprite 0 patrulhando na horizontal e sprite 1 na vertical por 330 quadros, espelhando ao mudar de direção.
+
+**Saída esperada:**
+- Os quatro espelhamentos lado a lado;
+- Os sprites "viram" para o lado em que estão andando.
+
+</details>
+
+</details>
+
+## Conclusão
+<details>
+ <summary>Resultados</summary>
+
+O projeto transformou o núcleo gráfico do Problema 1 em um coprocessador gráfico programável capaz de receber instruções do ARM, atendendo aos requisitos centrais da segunda etapa do projeto. Foi definida uma ISA de 32 bits com 32 opcodes (30 instruções na faixa 0–29, além de `CTRL` e `HALT`) e implementado o ciclo de busca, decodificação e execução, com unidade de controle multiciclo, banco de 16 registradores, ULA e registradores de status. Os motores de background, sprites e polígonos passaram a ser unidades funcionais acionadas apenas por instruções, enquanto o compositor, o frame buffer duplo e o controlador VGA operam continuamente.
+
+A comunicação com o ARM é feita por busca passiva, por meio de PIOs e de uma fila de 32 instruções, com sinais de busy, done e estado da fila disponíveis ao software. As trocas de buffer e a cópia dos atributos sincronizadas com a VSYNC garantem quadros completos e sem tearing.
+
+</details>
