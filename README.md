@@ -917,6 +917,8 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 
 </details>
 
+</details>
+
 ## Conclusão
 <details>
  <summary>Resultados</summary>
