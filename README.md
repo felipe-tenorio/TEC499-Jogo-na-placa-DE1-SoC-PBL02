@@ -202,3 +202,138 @@ As decisões centrais foram orientadas por três critérios:
 A busca passiva por PIO, a FIFO de comandos, as cópias de atributos na VSYNC, o frame buffer duplo e as instruções de troca que só terminam após a troca efetiva refletem esse equilíbrio entre simplicidade de hardware, previsibilidade para o software e estabilidade do vídeo.
 
 </details>
+
+<details>
+ <summary><h2>Análise de Recursos</h2></summary>
+ Esta seção consolida os resultados de síntese e análise de timing obtidos com o Quartus Prime 25.1std.0 Lite para o dispositivo Cyclone V 5CSEMA5F31C6 (DE1-SoC). Os números são do projeto completo (top-level <code>ghrd_top</code>), incluindo o sistema do HPS.
+
+### Utilização de recursos
+
+Recurso | Projeto completo | Disponível | Uso
+:--- | ---: | ---: | :---:
+ALMs | 5.324 | 32.070 | 17 %
+Registradores | 8.622 | — | —
+Bits de memória em bloco | 1.985.569 | 4.065.280 | 49 %
+Blocos M10K | 250 | 397 | 63 %
+Blocos DSP | 12 | 87 | 14 %
+PLLs | 2 | 6 | 33 %
+Pinos | 382 | 457 | 84 %
+
+Distribuição dentro do coprocessador (`coprocessor_core`):
+
+Módulo | ALMs | Registradores | Bits de memória | M10K | DSP
+:--- | ---: | ---: | ---: | ---: | ---:
+**coprocessor_core (total)** | **2.845** | **4.896** | **1.459.233** | **182** | **12**
+rasterizador_multi | 882 | 620 | 0 | 0 | 12
+banco_registradores | 666 | 1.170 | 0 | 0 | 0
+motor_sprites | 487 | 327 | 0 | 0 | 0
+isa_core (FIFO + IR + GPR + ULA + UC) | 313 | 321 | 1.024 | 1 | 0
+frame_buffer_duplo | 62 | 12 | 1.228.800 | 152 | 0
+vga_driver | 38 | 41 | 0 | 0 | 0
+motor_background | 26 | 40 | 0 | 0 | 0
+pio_cmd_iface | 15 | 42 | 0 | 0 | 0
+compositor | 5 | 0 | 0 | 0 | 0
+RAMs de vídeo (tilemaps + padrões) | 4 | 2 | 229.376 | 28 | 0
+
+O restante (cerca de 2.326 ALMs e 68 M10K) pertence ao sistema do HPS gerado no Platform Designer (interfaces, JTAG UART e memória on-chip de 64 KB).
+
+O item que mais cresceu em relação à primeira etapa foi a memória: o **frame buffer duplo sozinho ocupa 1,2 Mbit e 152 blocos M10K** (38 % dos blocos da FPGA). A lógica da ISA em si é pequena (cerca de 313 ALMs), mostrando que transformar o núcleo em um coprocessador programável custou pouco em lógica. O banco de registradores gráficos continua grande porque guarda os atributos de 32 sprites e 4 polígonos em registradores, que são lidos todos ao mesmo tempo pelos motores.
+
+### Timing e frequências
+
+Fmax reportado no modelo Slow 1100 mV 85 °C:
+
+Domínio | Frequência alvo | Fmax | Slack de setup | Slack de hold
+:--- | :---: | :---: | :---: | :---:
+`clk_sys` (pllpara100) | 100 MHz | 118,2 MHz | +1,524 ns | +0,245 ns
+`clk_pix` (meu_pll) | 25 MHz | 47,49 MHz | +2,811 ns | +0,287 ns
+`CLOCK_50` | 50 MHz | 94,47 MHz | +3,114 ns | +0,272 ns
+`altera_reserved_tck` (JTAG) | — | 65,34 MHz | +9,306 ns | +0,361 ns
+
+Todos os domínios do coprocessador fecham com folga. O domínio de 100 MHz, onde roda a ISA, é o mais apertado (cerca de 18 % de margem). Os caminhos com slack negativo que aparecem no relatório (`soc_system.sta.rpt`) pertencem à interface DDR3 do HPS (`hps_sdram`, IP UniPHY), e não ao coprocessador.
+
+### Desempenho funcional
+
+- **Execução de instruções:** cada instrução passa por IDLE → FETCH → DECODE → EXECUTE → WB, levando cerca de **5 ciclos de `clk_sys` (50 ns)** para instruções simples e até 8 ciclos (80 ns) para as que fazem várias escritas, como `PLY_DRAW`. Isso permite executar mais de 10 milhões de instruções por segundo;
+- **Envio pelo ARM:** cada instrução exige 3 escritas MMIO (dado, push = 1, push = 0), então o gargalo real é o barramento HPS → FPGA, e não o coprocessador;
+- **Taxa de quadros:** o VGA é gerado a 60 Hz. Como `SWAP_FB` só termina após o quadro novo ter sido composto inteiro, um laço que chama `SWAP_FB` a cada quadro atualiza a cena a cada 2 quadros VGA (**cerca de 30 quadros por segundo**);
+- **Latências de sincronização:** `WAIT_VS` dura até 1 quadro (16,7 ms); `SWAP_BG` até 1 quadro; `SWAP_FB` entre 1 e 2 quadros.
+
+### Gargalos identificados
+
+Os principais gargalos observados na arquitetura atual são:
+- **Envio instrução a instrução pelo PIO:** três acessos MMIO por instrução e a necessidade de consultar o status para não perder palavras quando a FIFO enche;
+- **Frame buffer duplo:** consome a maior parte da memória em bloco da FPGA, limitando a adição de novos recursos que usem RAM;
+- **Avaliação paralela de 32 sprites e 4 polígonos:** a árvore de prioridade dos sprites e os multiplicadores do rasterizador são os maiores blocos de lógica no domínio de pixel;
+- **Taxa efetiva de 30 quadros por segundo** quando todos os quadros usam `SWAP_FB`.
+
+### Limitações conhecidas
+
+- `JMP` e `BEQ` estão reservados na ISA, mas são executados como NOP, pois na busca passiva o fluxo é controlado pelo ARM;
+- A paleta programável de 256 cores do Problema 1 não é mais usada: as cores são lidas diretamente em RGB332 (o arquivo `paleta.mif` permanece no projeto, mas não está ligado);
+- O scroll absoluto (`SET_BG_X` / `SET_BG_Y`) possui 8 bits (0 a 255), menor que a largura de 320 pixels;
+- Em `PLY_DRAW` a coordenada X tem 9 bits e é estendida com sinal, então valores X ≥ 256 são interpretados como negativos e o polígono aparece no lugar errado perto da borda direita (o movimento relativo com `PLY_MOV` não tem esse problema);
+- `SPR_CFG` só permite prioridades de 0 a 3, embora o registrador interno tenha 3 bits;
+- Se a FIFO estiver cheia, a palavra enviada é descartada silenciosamente; o software deve verificar o bit `fifo_full` antes de enviar;
+- O sinal de endereço inválido do banco de registradores gráficos não chega ao `pio_status`;
+- Apenas 4 polígonos simultâneos.
+
+### Melhorias possíveis
+
+Com base na análise de recursos e timing, as melhorias mais promissoras são:
+- Substituir os PIOs por uma interface Avalon-MM com escrita direta na FIFO (uma escrita por instrução) ou por DMA, removendo o gargalo do envio;
+- Implementar `JMP`/`BEQ` com uma memória de instruções interna, permitindo que pequenos programas rodem sem o ARM (busca ativa);
+- Reintroduzir a paleta programável e sub-paletas por sprite;
+- Reduzir o frame buffer (por exemplo, compondo linha a linha com *line buffers*), liberando memória para mais padrões e uma segunda camada de background;
+- Ampliar o scroll para 9 bits e corrigir a extensão de sinal da coordenada X de `PLY_DRAW`;
+- Gerar uma interrupção para o ARM no fim de cada quadro, evitando que o software fique consultando o status.
+
+### Conclusão da análise
+
+O coprocessador utiliza uma fração modesta da lógica da Cyclone V e fecha timing em todos os seus domínios. O custo de tornar o núcleo programável (FIFO, IR, unidade de controle, GPRs e ULA) foi pequeno, enquanto o maior consumo vem do frame buffer duplo, que foi a escolha feita para garantir quadros completos e sem tearing. Os pontos de atenção se concentram na interface de envio de instruções e no uso de memória.
+
+</details>
+</details>
+
+## Estrutura Implementada
+
+<details>
+<summary>Módulos do Sistema</summary>
+
+Os arquivos RTL ficam na pasta `rtl/` e o top-level da placa é `ghrd_top.v`.
+
+Arquivo | Função
+:--- | :---
+`ghrd_top.v` | Top-level da DE1-SoC: instancia o `soc_system` (HPS + PIOs) e o coprocessador
+`coprocessor_core.v` | Top-level do coprocessador: PLLs, sincronizações, ISA, banco gráfico, memórias, motores, frame buffer e VGA
+`pio_cmd_iface.v` | Interface com os PIOs: detecção de push, comandos CTRL e registrador de status
+`fifo_cmd.v` | Fila de instruções de 32 posições × 32 bits
+`isa_core.v` | Núcleo da ISA: FIFO, IR, GPRs, ULA e unidade de controle
+`control_unit.v` | Unidade de controle (FSM) e decodificação das instruções
+`gpr_bank.v` | Banco de 16 registradores de 16 bits (R0 = 0)
+`alu.v` | ULA de 16 bits
+`banco_registradores.v` | Registradores gráficos (scroll, sprites, polígonos, camadas, trocas)
+`motor_background.v` | Motor de background (tilemap)
+`motor_sprites.v` | Motor de sprites
+`rasterizador_multi.v` | Rasterizador de polígonos
+`compositor.v` | Composição das camadas com prioridade configurável
+`frame_buffer_duplo.v` | Frame buffer duplo 320 × 240 (unidade de controle de quadro)
+`vga_driver.v` | Timing VGA 640 × 480
+`ram_*.v`, `*.mif` | RAMs de vídeo (IP altsyncram) e seus conteúdos iniciais
+`meu_pll*.v`, `pllpara100*.v` | PLLs de 25 MHz e 100 MHz
+
+### Registrador de Instrução e Unidade de Controle
+<details>
+<summary>Busca, decodificação e execução</summary>
+
+A instrução retirada da FIFO é guardada no IR, de onde saem o opcode (`ir[5:0]`), os índices de registradores e os campos imediatos. A unidade de controle decodifica o opcode e, em EXECUTE, gera os sinais para o datapath: escrita nos GPRs, operação da ULA, escrita no banco de registradores gráficos (`gfx_wr_en`, `gfx_addr`, `gfx_data`) e escrita nas memórias de vídeo (`mem_we`, `mem_addr`, `mem_data`).
+</details>
+<hr>
+
+### Banco de Registradores e ULA
+<details>
+<summary>Datapath de propósito geral</summary>
+
+O banco possui 16 registradores de 16 bits com leitura combinacional em duas portas (`Rs = ir[13:10]`, `Rt = ir[17:14]`) e escrita síncrona (`Rd = ir[9:6]`). `R0` sempre retorna zero, o que permite usar `R0` como "sem deslocamento" nas instruções de movimento. A ULA recebe `Rs` e `Rt` e devolve o resultado para `Rd`. No caso do `MOVI`, o valor escrito vem do campo imediato da instrução.
+</details>
+<hr>
