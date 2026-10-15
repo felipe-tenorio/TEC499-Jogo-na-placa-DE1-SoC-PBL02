@@ -66,7 +66,7 @@ Modo de execução passo a passo (depuração) | Atendido | comandos `CTRL FILA_
 
 ### Visão geral da arquitetura
 
-O top-level (`ghrd_top.v`) instancia o sistema do HPS gerado no Platform Designer e o coprocessador. O HPS se comunica com o coprocessador por três PIOs ligados ao barramento. Dentro do coprocessador, as instruções passam por uma interface de comandos, uma FIFO, o núcleo da ISA (IR, unidade de controle, banco de registradores e ULA) e, por fim, chegam ao banco de registradores gráficos e às memórias de vídeo, que alimentam os motores.
+O top-level (`ghrd_top.v`) instancia o sistema do HPS gerado no Platform Designer e o coprocessador. O HPS se comunica com o coprocessador por três PIOs ligados ao barramento. Dentro do coprocessador, as instruções passam por uma interface de comandos, uma FIFO, o núcleo da ISA (IR, unidade de controle, banco de registradores e ULA) e chegam ao banco de registradores gráficos e às memórias de vídeo, que alimentam os motores.
 
 <div align="center">
  <figure>
@@ -82,30 +82,26 @@ O top-level (`ghrd_top.v`) instancia o sistema do HPS gerado no Platform Designe
 ### Busca passiva
 
 Foi escolhida a **busca passiva**: em vez de uma memória de instruções interna, o coprocessador recebe as instruções do ARM por uma fila de comandos. Essa decisão foi tomada porque:
-- o jogo final será executado no ARM, então é ele quem decide o que desenhar a cada quadro (posição do jogador, inimigos, explosões). O programa fixo em `.mif` não conseguiria fazer isso;
-- prepara diretamente o caminho para o driver Linux em Assembly ARM das próximas etapas;
+- o jogo final será executado no ARM, então é ele quem decide o que desenhar a cada quadro (posição do jogador, inimigos, explosões);
 - permite trocar o programa de teste sem recompilar a FPGA.
 
-A consequência é que o controle de fluxo (laços e desvios) fica no programa do ARM.
 
 ### Domínios de clock e sincronização
 
 Foram mantidos os dois PLLs da primeira etapa, gerados a partir do `CLOCK_50`:
--  clock de pixel de 25 MHz (`clk_pix`) para 640 × 480 a 60 Hz;
+-  clock de pixel de 25 MHz (`clk_pix`);
 - clock de sistema de 100 MHz (`clk_sys`), usado pela interface de comandos, pela ISA, pelo banco de registradores gráficos e pelas RAMs de vídeo.
 
 O reset global combina o `hps_fpga_reset_n` com os sinais `locked` dos dois PLLs. Os cruzamentos entre os domínios são assim:
 - **VSYNC → clk_sys:** sincronizador de 3 flip-flops com detecção de borda, usado pela instrução `WAIT_VS` e pelo bit de status;
 - **Pedidos de troca (clk_sys → clk_pix):** cada pedido inverte um *toggle*, que atravessa 3 flip-flops e é convertido de volta em pulso no domínio de pixel;
-- **Atributos gráficos (clk_sys → clk_pix):** todos os atributos de sprites, polígonos, camadas e scroll são concatenados em um único vetor, registrados uma vez no domínio de pixel (`attr_meta`) e só copiados para os registradores usados pelos motores na borda da VSYNC. Assim, uma cena nunca é desenhada com metade dos atributos antigos e metade novos;
+- **Atributos gráficos (clk_sys → clk_pix):** todos os atributos de sprites, polígonos, camadas e scroll são concatenados em um único vetor, registrados uma vez no domínio de pixel (`attr_meta`) e só são copiados para os registradores usados pelos motores na borda da VSYNC. Assim, uma cena nunca é desenhada com metade dos atributos antigos e metade novos;
 - **Buffer visível (clk_pix → clk_sys):** `bg_frente` e `fb_frente` passam por 2 flip-flops e são usados pela unidade de controle para saber quando uma troca terminou.
 
 
 ### Interface de comandos (pio_cmd_iface)
 
-O ARM escreve a palavra de 32 bits em `pio_cmd_data` e gera uma borda de subida em `pio_cmd_push` (escreve 1 e depois 0). A interface detecta essa borda e:
-- se o opcode for `62` (**CTRL**), executa um comando de controle sem passar pela FIFO;
-- caso contrário, coloca a palavra na FIFO (se ela estiver cheia, a palavra é descartada, por isso o software deve consultar o status antes de enviar).
+O ARM escreve a palavra de 32 bits em `pio_cmd_data` e gera uma borda de subida em `pio_cmd_push` (escreve 1 e depois 0). A interface detecta essa borda e se o opcode for `62` (**CTRL**), executa um comando de controle sem passar pela FIFO, caso contrário, coloca a palavra na FIFO (se ela estiver cheia, a palavra é descartada, por isso o software deve consultar o status antes de enviar).
 
 Comandos de controle (`CTRL`, campo `ir[9:6]`):
 
@@ -147,7 +143,7 @@ stateDiagram-v2
 - **IDLE:** aguarda instrução na FIFO;
 - **FETCH:** retira a instrução da FIFO (`fifo_pop`);
 - **DECODE:** o IR é carregado e o contador de micro-passos é zerado;
-- **EXECUTE:** gera os sinais para o banco gráfico, memórias de vídeo, GPRs e ULA. Instruções que precisam escrever vários registradores gráficos (por exemplo `SPR_POS`, que seleciona o sprite e escreve X e Y) usam um contador interno `seq`, gastando um ciclo por escrita;
+- **EXECUTE:** gera os sinais para o banco gráfico, memórias de vídeo, GPRs e ULA. Instruções que precisam escrever vários registradores gráficos (por exemplo `SPR_POS`, que seleciona o sprite e escreve X e Y) usam um contador interno `seq`;
 - **WB:** fim da instrução, gera o pulso `done`;
 - **HALT:** trava o núcleo até um reset por software.
 
@@ -157,7 +153,7 @@ Instruções de sincronização ficam em EXECUTE até a condição ser atendida:
 
 ### Unidade de controle de quadro (frame buffer duplo)
 
-Diferente da primeira etapa, onde os motores enviavam a cor diretamente ao VGA, nesta etapa foi adicionado um **frame buffer duplo** de 2 × 320 × 240 bytes. O compositor escreve continuamente o quadro no buffer escondido (*back*), enquanto o VGA lê o buffer visível (*front*). O fluxo de uma troca é:
+Diferente da primeira fase do projeto, onde os motores enviavam a cor diretamente ao VGA, nesta fase foi adicionado um **frame buffer duplo** de 2 × 320 × 240 bytes. O compositor escreve continuamente o quadro no buffer escondido, enquanto o VGA lê o buffer visível . O fluxo de uma troca é:
 
 1. `SWAP_FB` pede a troca (`swap_fb_request`);
 2. na próxima VSYNC os atributos novos são copiados e a troca fica "armada";
@@ -169,7 +165,7 @@ Essa decisão foi tomada para que uma cena nunca seja exibida pela metade, mesmo
 ### Memórias de vídeo
 
 As memórias continuam sendo blocos RAM dual-port gerados pelo Quartus (`altsyncram`), inicializados por arquivos `.mif`, mas agora possuem **porta de escrita ligada à ISA**:
-- Duas RAMs de tilemap (A e B) de 2048 × 8 bits (`tilemap_a.mif`, `tilemap_b.mif`), com troca na VSYNC por `SWAP_BG`;
+- Duas RAMs de tilemap (A e B) de 2048 × 8 bits, com troca na VSYNC por `SWAP_BG`;
 - RAM de padrões de tiles com 16384 × 8 bits (256 tiles de 8 × 8) (`padroes_tiles.mif`);
 - RAM de padrões de sprites com 8192 × 8 bits (32 padrões de 16 × 16) (`padroes_sprites.mif`).
 
@@ -177,29 +173,18 @@ A instrução `SET_TILE` escreve uma posição do tilemap no buffer escondido, n
 
 ### Motores gráficos
 
-Os motores do Problema 1 foram reaproveitados como unidades funcionais, com pequenas alterações:
+Os motores foram reaproveitados como unidades funcionais, com pequenas alterações:
 - **Motor de background:** pipeline de 3 estágios, tilemap 40 × 30, tiles 8 × 8 e scroll com *wrapping* por subtrações condicionais de 320/240;
 - **Motor de sprites:** 32 sprites de 16 × 16 avaliados em paralelo, com espelhamento horizontal e vertical. A escolha entre sprites no mesmo pixel é feita por uma **árvore de comparação** de prioridade (em caso de empate vence o sprite de maior índice). O índice de cor `0` é transparente;
-- **Rasterizador:** 4 slots de polígonos, com 6 formas (retângulo, quadrado, triângulo retângulo, isósceles com ápice para cima ou para baixo e escaleno), definidas por origem (X, Y) e tamanho. A geometria de cada slot é pré-calculada uma vez por ciclo e o teste de inclusão usa funções de aresta com aritmética inteira, em um pipeline de 3 estágios.
+- **Rasterizador:** 6 formas (retângulo, quadrado, triângulo retângulo, isósceles com ápice para cima ou para baixo e escaleno), definidas por origem (X, Y) e tamanho. A geometria de cada slot é pré-calculada uma vez por ciclo e o teste de inclusão usa funções de aresta com aritmética inteira, em um pipeline de 3 estágios.
 
 ### Compositor e regra de prioridade
 
-O compositor combina as três camadas com transparência pelo índice `0`. A prioridade entre sprites e polígonos agora é **configurável** pela instrução `SET_PRI`:
-- `SET_PRI 1` (padrão): sprite > polígono > background;
-- `SET_PRI 0`: polígono > sprite > background.
+O compositor combina as três camadas com transparência pelo índice `0`. A prioridade entre sprites e polígonos agora é **configurável** pela instrução `SET_PRI`.
 
 ### Saída VGA
 
-O `vga_driver` é usado apenas como gerador de timing (HSYNC, VSYNC e coordenadas). A cor é lida do frame buffer e convertida de RGB332 para os 8 bits por canal do DAC. Cor, HSYNC, VSYNC e BLANK são registrados juntos, com o mesmo atraso, e o `VGA_CLK` é o clock de pixel invertido, colocando a borda de amostragem do DAC no meio do pixel.
-
-### Justificativa das principais decisões
-
-As decisões centrais foram orientadas por três critérios:
-- desacoplar o software dos detalhes internos de cada motor, deixando a ISA como única interface;
-- manter a saída de vídeo estável e sem tearing, independentemente do ritmo do software;
-- preparar a arquitetura para o driver em Assembly ARM e para o jogo em C das próximas etapas.
-
-A busca passiva por PIO, a FIFO de comandos, as cópias de atributos na VSYNC, o frame buffer duplo e as instruções de troca que só terminam após a troca efetiva refletem esse equilíbrio entre simplicidade de hardware, previsibilidade para o software e estabilidade do vídeo.
+O `vga_driver` é usado apenas como gerador de timing (HSYNC, VSYNC e coordenadas). A cor é lida do frame buffer e convertida de RGB332 para os 8 bits por canal do DAC. Cor, HSYNC, VSYNC e BLANK são registrados juntos, com o mesmo atraso.
 
 </details>
 
@@ -237,7 +222,7 @@ RAMs de vídeo (tilemaps + padrões) | 4 | 2 | 229.376 | 28 | 0
 
 O restante (cerca de 2.326 ALMs e 68 M10K) pertence ao sistema do HPS gerado no Platform Designer (interfaces, JTAG UART e memória on-chip de 64 KB).
 
-O item que mais cresceu em relação à primeira etapa foi a memória: o **frame buffer duplo sozinho ocupa 1,2 Mbit e 152 blocos M10K** (38 % dos blocos da FPGA). A lógica da ISA em si é pequena (cerca de 313 ALMs), mostrando que transformar o núcleo em um coprocessador programável custou pouco em lógica. O banco de registradores gráficos continua grande porque guarda os atributos de 32 sprites e 4 polígonos em registradores, que são lidos todos ao mesmo tempo pelos motores.
+O item que mais cresceu em relação à primeira etapa foi a memória: o **frame buffer duplo sozinho ocupa 1,2 Mbit e 152 blocos M10K** (38 % dos blocos da FPGA). A lógica da ISA em si é pequena (cerca de 313 ALMs), mostrando que transformar o núcleo em um coprocessador programável custou pouco em lógica. O banco de registradores gráficos continua grande porque guarda os atributos de 32 sprites e polígonos em registradores, que são lidos todos ao mesmo tempo pelos motores.
 
 ### Timing e frequências
 
@@ -250,7 +235,7 @@ Domínio | Frequência alvo | Fmax | Slack de setup | Slack de hold
 `CLOCK_50` | 50 MHz | 94,47 MHz | +3,114 ns | +0,272 ns
 `altera_reserved_tck` (JTAG) | — | 65,34 MHz | +9,306 ns | +0,361 ns
 
-Todos os domínios do coprocessador fecham com folga. O domínio de 100 MHz, onde roda a ISA, é o mais apertado (cerca de 18 % de margem). Os caminhos com slack negativo que aparecem no relatório (`soc_system.sta.rpt`) pertencem à interface DDR3 do HPS (`hps_sdram`, IP UniPHY), e não ao coprocessador.
+Todos os domínios do coprocessador fecham com folga. O domínio de 100 MHz, onde roda a ISA, é o mais apertado (cerca de 18 % de margem). Os caminhos com slack negativo que aparecem no relatório pertencem à interface DDR3 do HPS, e não ao coprocessador.
 
 ### Desempenho funcional
 
@@ -264,33 +249,24 @@ Todos os domínios do coprocessador fecham com folga. O domínio de 100 MHz, ond
 Os principais gargalos observados na arquitetura atual são:
 - **Envio instrução a instrução pelo PIO:** três acessos MMIO por instrução e a necessidade de consultar o status para não perder palavras quando a FIFO enche;
 - **Frame buffer duplo:** consome a maior parte da memória em bloco da FPGA, limitando a adição de novos recursos que usem RAM;
-- **Avaliação paralela de 32 sprites e 4 polígonos:** a árvore de prioridade dos sprites e os multiplicadores do rasterizador são os maiores blocos de lógica no domínio de pixel;
+- **Avaliação paralela de 32 sprites e polígonos:** a árvore de prioridade dos sprites e os multiplicadores do rasterizador são os maiores blocos de lógica no domínio de pixel;
 - **Taxa efetiva de 30 quadros por segundo** quando todos os quadros usam `SWAP_FB`.
 
 ### Limitações conhecidas
 
 - `JMP` e `BEQ` estão reservados na ISA, mas são executados como NOP, pois na busca passiva o fluxo é controlado pelo ARM;
-- A paleta programável de 256 cores do Problema 1 não é mais usada: as cores são lidas diretamente em RGB332 (o arquivo `paleta.mif` permanece no projeto, mas não está ligado);
-- O scroll absoluto (`SET_BG_X` / `SET_BG_Y`) possui 8 bits (0 a 255), menor que a largura de 320 pixels;
-- Em `PLY_DRAW` a coordenada X tem 9 bits e é estendida com sinal, então valores X ≥ 256 são interpretados como negativos e o polígono aparece no lugar errado perto da borda direita (o movimento relativo com `PLY_MOV` não tem esse problema);
-- `SPR_CFG` só permite prioridades de 0 a 3, embora o registrador interno tenha 3 bits;
 - Se a FIFO estiver cheia, a palavra enviada é descartada silenciosamente; o software deve verificar o bit `fifo_full` antes de enviar;
-- O sinal de endereço inválido do banco de registradores gráficos não chega ao `pio_status`;
-- Apenas 4 polígonos simultâneos.
 
 ### Melhorias possíveis
 
 Com base na análise de recursos e timing, as melhorias mais promissoras são:
 - Substituir os PIOs por uma interface Avalon-MM com escrita direta na FIFO (uma escrita por instrução) ou por DMA, removendo o gargalo do envio;
-- Implementar `JMP`/`BEQ` com uma memória de instruções interna, permitindo que pequenos programas rodem sem o ARM (busca ativa);
-- Reintroduzir a paleta programável e sub-paletas por sprite;
 - Reduzir o frame buffer (por exemplo, compondo linha a linha com *line buffers*), liberando memória para mais padrões e uma segunda camada de background;
-- Ampliar o scroll para 9 bits e corrigir a extensão de sinal da coordenada X de `PLY_DRAW`;
 - Gerar uma interrupção para o ARM no fim de cada quadro, evitando que o software fique consultando o status.
 
 ### Conclusão da análise
 
-O coprocessador utiliza uma fração modesta da lógica da Cyclone V e fecha timing em todos os seus domínios. O custo de tornar o núcleo programável (FIFO, IR, unidade de controle, GPRs e ULA) foi pequeno, enquanto o maior consumo vem do frame buffer duplo, que foi a escolha feita para garantir quadros completos e sem tearing. Os pontos de atenção se concentram na interface de envio de instruções e no uso de memória.
+O coprocessador utiliza uma fração modesta da lógica da placa. O custo de tornar o núcleo programável (FIFO, IR, unidade de controle, GPRs e ULA) foi pequeno, enquanto o maior consumo vem do frame buffer duplo, que foi a escolha feita para garantir quadros completos e sem tearing. Os pontos de atenção se concentram na interface de envio de instruções e no uso de memória.
 
 </details>
 </details>
@@ -300,7 +276,7 @@ O coprocessador utiliza uma fração modesta da lógica da Cyclone V e fecha tim
 <details>
 <summary>Módulos do Sistema</summary>
 
-Os arquivos RTL ficam na pasta `rtl/` e o top-level da placa é `ghrd_top.v`.
+O top-level da placa é `ghrd_top.v`.
 
 Arquivo | Função
 :--- | :---
