@@ -591,7 +591,7 @@ LEDR[9:5] | Modo normal: opcode da última instrução. Modo fila: quantidade de
 <details>
 <summary>Testes</summary>
 
-### Software de teste no HPS
+#### Software de teste no HPS
 <details>
 <summary>Driver em Assembly e programa de testes</summary>
 
@@ -650,7 +650,7 @@ Cada `SWAP_FB` bloqueia por cerca de 2 quadros, então ele também controla a ve
 </details>
 <hr>
 
-### Cenários de teste na placa
+#### Cenários de teste na placa
 <details>
 <summary>Menu de testes (test_grafico)</summary>
 
