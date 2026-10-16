@@ -698,6 +698,18 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 
 **Saída esperada:**
 - O sprite anda na diagonal e volta exatamente para (100, 80).
+
+<div align="center">
+ <figure>
+  <img src="Docs/cenario2.gif" width="500px"/>
+  <figcaption>
+    <p align="center">
+     <b>Figura 4</b> - Cenário 2
+    </p>
+  </figcaption>
+ </figure>
+</div>
+
 </details>
 
 #### Cenário 3 - Trocar padrões de sprite
@@ -715,6 +727,18 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 **Saída esperada:**
 - Troca do desenho sem mover o sprite;
 - Com prioridade 2 o sprite 1 fica na frente do sprite 0; com prioridade 0 fica atrás.
+
+<div align="center">
+ <figure>
+  <img src="Docs/cenario3.gif" width="500px"/>
+  <figcaption>
+    <p align="center">
+     <b>Figura 5</b> - Cenário 3
+    </p>
+  </figcaption>
+ </figure>
+</div>
+
 </details>
 
 #### Cenário 4 - Mostrar e mover um polígono
@@ -733,6 +757,18 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 **Saída esperada:**
 - O polígono muda de forma e cor no mesmo lugar, se move e cresce;
 - Com `SET_PRI 1` o sprite fica na frente do quadrado; com `SET_PRI 0` o quadrado cobre o sprite.
+
+<div align="center">
+ <figure>
+  <img src="Docs/cenario4.gif" width="500px"/>
+  <figcaption>
+    <p align="center">
+     <b>Figura 6</b> - Cenário 4
+    </p>
+  </figcaption>
+ </figure>
+</div>
+
 </details>
 
 #### Cenário 5 - Demo completa
@@ -748,6 +784,17 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 
 **Saída esperada:**
 - Todos os objetos se movem ao mesmo tempo, quicando nas bordas, sem tearing e sem objetos faltando em nenhum quadro.
+
+<div align="center">
+ <figure>
+  <img src="Docs/cenario5.gif" width="500px"/>
+  <figcaption>
+    <p align="center">
+     <b>Figura 7</b> - Cenário 5
+    </p>
+  </figcaption>
+ </figure>
+</div>
 
 </details>
 
@@ -787,6 +834,17 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 **Saída esperada:**
 - O sprite anda 12 px a cada `SWAP_FB` executado e termina 120 px à direita;
 - LEDR[1] aceso durante o modo fila e LEDR[9:5] mostrando a quantidade na FIFO.
+
+<div align="center">
+ <figure>
+  <img src="Docs/cenario7.gif" width="500px"/>
+  <figcaption>
+    <p align="center">
+     <b>Figura 8</b> - Cenário 7
+    </p>
+  </figcaption>
+ </figure>
+</div>
 
 </details>
 
@@ -836,6 +894,18 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 
 **Saída esperada:**
 - Na parte 1 nada muda na tela; na parte 2 todas as faixas aparecem juntas; na parte 3 cada faixa aparece assim que é escrita.
+
+<div align="center">
+ <figure>
+  <img src="Docs/cenario9.gif" width="500px"/>
+  <figcaption>
+    <p align="center">
+     <b>Figura 9</b> - Cenário 9
+    </p>
+  </figcaption>
+ </figure>
+</div>
+
 </details>
 
 #### Cenário 10 - Troca de background
@@ -854,6 +924,18 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 
 **Saída esperada:**
 - Alternância entre o background original e o da moldura, inclusive durante o scroll, sem quadros misturados.
+
+<div align="center">
+ <figure>
+  <img src="Docs/cenario10.gif" width="500px"/>
+  <figcaption>
+    <p align="center">
+     <b>Figura 10</b> - Cenário 10
+    </p>
+  </figcaption>
+ </figure>
+</div>
+
 </details>
 
 #### Cenário 11 - Múltiplos sprites com movimentação
@@ -928,6 +1010,17 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 **Saída esperada:**
 - Os quatro espelhamentos lado a lado;
 - Os sprites "viram" para o lado em que estão andando.
+
+<div align="center">
+ <figure>
+  <img src="Docs/cenario15.gif" width="500px"/>
+  <figcaption>
+    <p align="center">
+     <b>Figura 11</b> - Cenário 15
+    </p>
+  </figcaption>
+ </figure>
+</div>
 
 </details>
 
