@@ -951,6 +951,18 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 
 **Saída esperada:**
 - Cada sprite se move com velocidade própria e desaparece na ordem.
+
+<div align="center">
+ <figure>
+  <img src="Docs/cenario11.gif" width="500px"/>
+  <figcaption>
+    <p align="center">
+     <b>Figura 11</b> - Cenário 11
+    </p>
+  </figcaption>
+ </figure>
+</div>
+
 </details>
 
 #### Cenário 12 - Múltiplos polígonos com movimentação
@@ -1016,7 +1028,7 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
   <img src="Docs/cenario15.gif" width="500px"/>
   <figcaption>
     <p align="center">
-     <b>Figura 11</b> - Cenário 15
+     <b>Figura 12</b> - Cenário 15
     </p>
   </figcaption>
  </figure>
