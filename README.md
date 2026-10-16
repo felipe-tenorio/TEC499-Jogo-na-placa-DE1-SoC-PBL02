@@ -353,13 +353,16 @@ O banco possui 16 registradores de 16 bits com leitura combinacional em duas por
 
 Todas as instruções possuem **32 bits**, com o opcode sempre nos 6 bits menos significativos. Foram definidos quatro formatos:
 
-```
-        31        :      18 17   :  14 13      10 9   :    6 5   :    0
-  R  : |        0          |    Rt    |    Rs    |    Rd    |  OPCODE  |
-  I  : |       Imm[17:0]              |    Rs    |    Rd    |  OPCODE  |
-  G  : |          campos gráficos      ir[31:6]             |  OPCODE  |
-  J  : |          alvo / flags         ir[31:6]             |  OPCODE  |
-```
+<div align="center">
+ <figure>
+  <img src="Docs/Formatos(bits 31→0).png" width="500px"/>
+  <figcaption>
+    <p align="center">
+     <b>Figura 2</b> - Formatos de Instruções
+    </p>
+  </figcaption>
+ </figure>
+</div>
 
 - **R:** operações entre registradores (`ADD`, `SUB`, `AND`, `OR`, `MOV`) e movimentos relativos, que usam `Rs` como deslocamento em X e `Rt` como deslocamento em Y;
 - **I:** carga de imediato (`MOVI`), com valor de 16 bits em `ir[29:14]`;
