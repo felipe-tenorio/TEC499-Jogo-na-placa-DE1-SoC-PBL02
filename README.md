@@ -669,7 +669,6 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
 
 **Saída esperada:**
 - O background salta para (80, 40) e depois rola na diagonal até (160, 80), repetindo a cena nas bordas.
-</details>
 
 <div align="center">
  <figure>
@@ -681,6 +680,10 @@ Os cenários 7 a 10 possuem **verificações automáticas** que leem o `pio_stat
   </figcaption>
  </figure>
 </div>
+
+</details>
+
+
 
 #### Cenário 2 - Mostrar e mover um sprite
 <details>
