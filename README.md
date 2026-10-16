@@ -249,8 +249,7 @@ Todos os domínios do coprocessador fecham com folga. O domínio de 100 MHz, ond
 Os principais gargalos observados na arquitetura atual são:
 - **Envio instrução a instrução pelo PIO:** três acessos MMIO por instrução e a necessidade de consultar o status para não perder palavras quando a FIFO enche;
 - **Frame buffer duplo:** consome a maior parte da memória em bloco da FPGA, limitando a adição de novos recursos que usem RAM;
-- **Avaliação paralela de 32 sprites e polígonos:** a árvore de prioridade dos sprites e os multiplicadores do rasterizador são os maiores blocos de lógica no domínio de pixel;
-- **Taxa efetiva de 30 quadros por segundo** quando todos os quadros usam `SWAP_FB`.
+- **Avaliação paralela de 32 sprites e polígonos:** a árvore de prioridade dos sprites e os multiplicadores do rasterizador são os maiores blocos de lógica no domínio de pixel.
 
 ### Limitações conhecidas
 
@@ -623,7 +622,7 @@ Toda espera tem limite de 2 s. Os retornos negativos indicam o motivo da falha: 
 #### Compilação e execução
 
 ```bash
-gcc -O2 -Wall -o test_grafico test_grafico_hps.c coproc_driver.s
+gcc -std=c99 -O2 -Wall -o test_grafico test_grafico_hps.c coproc_driver.s
 ```
 
 Modo | Comando
